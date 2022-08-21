@@ -1,0 +1,1 @@
+scp -r pi@mypi.local:~/Desktop C:\Users\kream\Desktop\ARC\Finale

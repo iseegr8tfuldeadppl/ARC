@@ -375,7 +375,7 @@ cap = cv2.VideoCapture(0)
 
 # Arm: Vars
 last_go_arm_execusion = 0
-delay_between_arm_execusions = 0.5 # 2 seconds
+delay_between_arm_execusions = 0.2 # 0.2 or 0.5 or 2 seconds
 arm_windows_shown = False
 armPosition = 0
 viewed_armPosition = 0
@@ -954,15 +954,15 @@ def showWindows():
         updateButtons()
 
 # Arm: Functions
+print("Wrap 2 is stopping before position index 6")
 def wrap2(index):
-    print("Wrap 2 is stopping at position index 4")
-    if index >= 4: ######len(armPositions[armShapes[viewed_armShapePosition]])
+    if index >= 6: ######len(armPositions[armShapes[viewed_armShapePosition]])
         return 0
     elif index < 0:
-        return 3 ######len(armPositions[armShapes[viewed_armShapePosition]])-1
+        return 5 ######len(armPositions[armShapes[viewed_armShapePosition]])-1
     else:
         return index
-def wrap3(index):
+def wrap3(index): # for different shapes
     if index >= 4:
         return 0
     elif index < 0:
@@ -1085,23 +1085,24 @@ def checkArmUpdatedManually():
     #if not autoStartMode:
     if armUpdated:
         armUpdated = False
-        go_to_coordinates(MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+        go_to_coordinates(viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX))
 
     
-                            
+                             
     elif go_arm:
-        if time.time() - last_go_arm_execusion >= delay_between_arm_execusions:
+        # this part is for testing arm sequences only (loop mode is on)
+        # first part of if statment is delay between position and another, second part is delay between a sequence and another
+        if time.time() - last_go_arm_execusion >= delay_between_arm_execusions or (time.time() - last_go_arm_execusion >= 2 and armPosition==0):
             # Menu: just to update the menu we are seeing
             if viewed_armPosition != armPosition:
                 viewed_armPosition = armPosition
                 updateArmSliders()
                 updateArmButtons()
 
-            print("Go Arm: Executing position at index", armPosition)
-            go_to_coordinates(MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+            go_to_coordinates(viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX))
@@ -1121,7 +1122,7 @@ def robotArm():
     # this is for auto mode, execute the sequence once and then stop
     #else:
     if time.time() - last_go_arm_execusion >= delay_between_arm_execusions:
-        go_to_coordinates(MSFromPercent(armPositions[detectedShape][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+        go_to_coordinates(armPosition, MSFromPercent(armPositions[detectedShape][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["spine"], SPINE_MIN, SPINE_MAX))
