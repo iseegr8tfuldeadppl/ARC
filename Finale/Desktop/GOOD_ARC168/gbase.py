@@ -1,8 +1,12 @@
 import pigpio
 from time import sleep
+import sys
 
 # first type sudo pigpiod
 pi = pigpio.pi()       # pi1 accesses the local Pi's GPIO
+if not pi.connected:
+    print("Not connected to Raspberry Pi ... goodbye.")
+    sys.exit()
 
 MOUTH = 12
 MOUTH_MIN = 500 # 1500
@@ -35,15 +39,16 @@ def turnOffArm():
     pi.set_servo_pulsewidth(SPINE, 0) #spine 500-2000
 turnOffArm()
 
-def go_to_coordinates(position, m, b, t, s, step=30, delay=0.05):
+def go_to_coordinates(mode, position, m, b, t, s, step=30, delay=0.05):
     global CURRENT_MOUTH, CURRENT_BOTTOM, CURRENT_TILT, CURRENT_SPINE
 
-    if position == 3:
-        delay = 0.05
-        step = 80
-    elif position == 4:
-        delay = 0.03
-        step = 100
+    if mode != "Cargo Pass":
+        if position == 3:
+            delay = 0.05
+            step = 80
+        elif position == 4:
+            delay = 0.03
+            step = 100
 
     mouth_step = (m - CURRENT_MOUTH) / step
     bottom_step = (b - CURRENT_BOTTOM) / step
