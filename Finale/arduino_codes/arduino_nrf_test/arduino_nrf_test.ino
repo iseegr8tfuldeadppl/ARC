@@ -3,8 +3,7 @@
 #define PIN_RF24_CSN             9
 #define PIN_RF24_CE             10
  
-#define NRF24_DYNAMIC_PAYLOAD    1   
-byte protocol = 0x01;                  
+#define NRF24_DYNAMIC_PAYLOAD    1           
 byte rf24_tx[6] = "1SRVR"; // sending
 byte rf24_rx[6] = "1CLNT"; // receiving
 
@@ -32,10 +31,7 @@ void read_response() {
 
   radio.stopListening();
   delay(10);
-  memset(payload, 0, 32);
-  memcpy(payload, (byte *)(&protocol), 1);
-  memcpy(payload + 1, (byte *)(&chars), Size);
-  boolean success = radio.write(payload, Size+1);
+  boolean success = radio.write(chars, Size);
   radio.startListening();
   
   Serial.println("Received msg " + String(chars) + " Ack: " + String(success));
