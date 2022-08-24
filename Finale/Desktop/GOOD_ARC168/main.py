@@ -66,7 +66,7 @@ hsvs = { # https://stackoverflow.com/questions/10948589/choosing-the-correct-upp
 canny = {
     "minSizeRatio": 0.06,
     "maxSizeRatio": 0.75,
-    "rectangle_width_to_height_ratio": 0.4,
+    "rectangle_width_to_height_ratio": 0.3,
     "countours_to_display": 7,
     "minGrayThresh": 127, #195
     "maxGrayThresh": 255, #255
@@ -94,7 +94,7 @@ def resetVotes():
         "Yellow": 0,
         "Orange": 0,
         "Start Of Vote": time.time(),
-        "Max Vote Period": 2 # 1 second of voting
+        "Max Vote Period": 1 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
     }
 
 def resolveVotes():
@@ -485,8 +485,17 @@ log.setLevel(logging.ERROR)
 def index():
     return "Bozo"
 
-mode = "Unselected" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
+mode = "Vision" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
 print("Initial mode is", mode, "btw")
+@app.route('/motion', methods=["GET", "POST"])
+def motion_feed():
+    if request.method == 'GET':
+        return "Gucci"
+    elif request.method == 'POST':
+        receivedAngles = request.form.get("angles")
+        print(receivedAngles)
+        return "Gucci"
+
 @app.route('/mode', methods=["GET", "POST"])
 def mode_feed():
     global mode, shapes, detectedColor, detectedShape, allowToPickUp, pickupRequest
@@ -954,6 +963,8 @@ def cannyStuff():
             votes["Triangles"] += 1
             return
         elif len(approx)==4 or surface_percentage >= 0.87:
+            #print("width to height ratio", abs( 1 - float(w)/h ))
+            canny["rectangle_width_to_height_ratio"] = 0.3 # CAN GIVE ERRORS HERE: i'm hardcoding this
             if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
                 votes["Squares"] += 1
                 return
@@ -1399,17 +1410,24 @@ def detecting_shape():
 
 
 # Auto: Functions
+firstVisionPermissionRequested = False
 def autoThread():
     global allowToPickUp, pickupRequest, detectedColor, detectedShape, carControlOn, shapes, mode
     global armPosition, last_go_arm_execusion # arm mode
     global cargoArmPosition, cargo_pass_done, last_go_cargo_arm_execusion # cargo pass
     global last_slider_update, saved
-    global visionPermissionRequested
+    global visionPermissionRequested, firstVisionPermissionRequested
     global votes # decision system
+
+    print("COMP DAY STUFF: APPROVE ALL REQUESTS")
+    # DISABLE ALL ALLOW PICKUPS HERE BY SETTING THE BOOLEANS DIRECTLY
+    #if firstVisionPermissionRequested: ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
+    #    allowToPickUp = True
 
     #mode = "Vision" # in auto mode, mode begins from vision
     print("AUTO: Vision mode") # always starts with vision
     visionPermissionRequested = False
+    firstVisionPermissionRequested = False
     while True:
         if not comp_day:
             # save to pickle file
@@ -1433,18 +1451,27 @@ def autoThread():
                 detectedShape, detectedColor = resolveVotes()
                 print("detections", detectedShape, detectedColor)
                 votes = resetVotes()
-                if not visionPermissionRequested:
-                    print("Vision: (DEBUG: permission to move onto arm sent)")
-                    visionPermissionRequested = True
-                    allowToPickUp = False
-                    pickupRequest = True
 
-                if allowToPickUp: # i requested 
-                    allowToPickUp = False
-                    pickupRequest = True
-                    shapes = ogShapes
-                    mode = "Arm"
-                    print("AUTO: Arm mode (pickup request sent)")
+                if not firstVisionPermissionRequested:
+                    if allowToPickUp:
+                        firstVisionPermissionRequested = True
+                    else:
+                        print("Vision: (DEBUG: permission to start vision sent)")
+                        pickupRequest = True
+
+                if firstVisionPermissionRequested:
+                    if not visionPermissionRequested:
+                        print("Vision: (DEBUG: permission to move onto arm sent)")
+                        visionPermissionRequested = True
+                        allowToPickUp = False
+                        pickupRequest = True
+
+                    if allowToPickUp: # i requested 
+                        allowToPickUp = False
+                        pickupRequest = True
+                        shapes = ogShapes
+                        mode = "Arm"
+                        print("AUTO: Arm mode (pickup request sent)")
 
             if not comp_day:
                 # DEBUGGING:
@@ -1582,6 +1609,7 @@ def autoThread():
             visionPermissionRequested = False
             sendNRFFinishMsg(pi)
 
+        '''
         elif mode == "Unselected":
             shapes = ogShapes
             #if not comp_day:
@@ -1591,6 +1619,7 @@ def autoThread():
             carControlOn = False
             cargo_pass_done = False
             visionPermissionRequested = False
+        '''
 
 def debugThread():
     global carControlOn, cargo_pass_done

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import mustshop.arduino.arm.R;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
     private TextView playAll, stopPlayAll;
     private SharedPreferences.Editor editor;
     private SharedPreferences prefs;
-    private final String MY_PREFS_NAME = "mustshop.arduino.arm";
+    private final String MY_PREFS_NAME = "mustshop.arduino.armforcar";
     private final static int motors = 5;
     private int previous_playing_index;
     private EditText robotIPInput;
@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
                             // save  current position in sharedprefs
                             updatedCurrentPositionInSharedPreferences();
 
-                            sendCommand("motion/?angles=" + bottom + "," + spine + "," + tilt + "," + mouth + "," + gate);
+                            sendCommand("motion");
                         }
 
                         if(playing){
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
                                     }
                                 });
 
-                                sendCommand("motion/?angles=" + bottom + "," + spine + "," + tilt + "," + mouth + "," + gate);
+                                sendCommand("motion");
                             }
                         }
                     } catch (Exception e) {
@@ -315,11 +315,22 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
 
 
     void sendCommand(String url) {
-        log("sending " + url);
-        Request request = new Request.Builder()
-                .url("http://" + robotIP + "/" + url)
-                .get()
-                .build();
+        //log("sending " + url);
+        Request request = new Request.Builder().url("http://" + robotIP + "/" + url).build();
+        if(url.equals("motion")){
+            FormBody formBody = new FormBody.Builder()
+                    .add("angles", bottom + "," + spine + "," + tilt + "," + mouth + "," + gate)
+                    .build();
+            request = new Request.Builder()
+                    .url("http://" + robotIP + "/" + url)
+                    .post(formBody)
+                    .build();
+        } else if(url.equals(""){
+            request = new Request.Builder()
+                    .url("http://" + robotIP + "/" + url)
+                    .get()
+                    .build();
+        }
 
         try {
             Response response = client.newCall(request).execute();
@@ -337,6 +348,9 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
         } catch(SocketTimeoutException e){
             log("couldn't connect " + e);
         } catch(IOException e){
+            log("error when sending http " + e);
+            //e.printStackTrace();
+        }catch(Exception e){
             log("error when sending http " + e);
             //e.printStackTrace();
         }

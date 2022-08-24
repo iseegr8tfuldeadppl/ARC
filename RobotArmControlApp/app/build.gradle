@@ -6,7 +6,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "mustshop.arduino.arm"
+        applicationId "mustshop.arduino.armforarc"
         minSdk 16
         targetSdk 31
         versionCode 2

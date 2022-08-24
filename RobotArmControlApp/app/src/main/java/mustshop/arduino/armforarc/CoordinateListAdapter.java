@@ -17,7 +17,6 @@ import com.bumptech.glide.Glide;
 
 import java.util.List;
 
-import mustshop.arduino.arm.R;
 import mustshop.arduino.armforarc.MainActivity.Coordinate;
 
 public class CoordinateListAdapter extends RecyclerView.Adapter<CoordinateListAdapter.ViewHolder> {
