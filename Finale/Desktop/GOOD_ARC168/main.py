@@ -487,19 +487,33 @@ def index():
 
 mode = "Vision" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
 print("Initial mode is", mode, "btw")
+receivedAnglesBoolean = False
 @app.route('/motion', methods=["GET", "POST"])
 def motion_feed():
+    global current_manual_cargo_positions, receivedAnglesBoolean
     if request.method == 'GET':
-        return "Gucci"
+        if current_manual_cargo_positions == None:
+            print("was unable to return arm positions bcz it wasn't inited yet")
+            return "OOF, arm positions not inited yet"
+        else:
+            return str(current_manual_cargo_positions["bottom"]) + "," + str(current_manual_cargo_positions["spine"]) + "," + str(current_manual_cargo_positions["tilt"]) + "," + str(current_manual_cargo_positions["mouth"]) + "," + "90"
     elif request.method == 'POST':
-        receivedAngles = request.form.get("angles")
-        print(receivedAngles)
+        receivedAngles = request.form.get("angles").split(",")
+        receivedAnglesBoolean = True
+        current_manual_cargo_positions = {
+            "mouth": int(receivedAngles[3]),
+            "bottom": int(receivedAngles[0]),
+            "tilt": int(receivedAngles[2]),
+            "spine": int(receivedAngles[1]),
+        }
+        print(current_manual_cargo_positions)
         return "Gucci"
 
+current_manual_cargo_positions = None
 @app.route('/mode', methods=["GET", "POST"])
 def mode_feed():
     global mode, shapes, detectedColor, detectedShape, allowToPickUp, pickupRequest
-    global cargo_pass_done # cargo pass
+    global cargo_pass_done, current_manual_cargo_positions # cargo pass
     if request.method == 'GET':
         return mode
     elif request.method == 'POST':
@@ -509,6 +523,13 @@ def mode_feed():
 
         if tempMode == "Cargo Pass":
             cargo_pass_done = False
+            
+            current_manual_cargo_positions = {
+                "mouth": percentFromMS(CURRENT_MOUTH, MOUTH_MIN, MOUTH_MAX),
+                "bottom": percentFromMS(CURRENT_BOTTOM, BOTTOM_MIN, BOTTOM_MAX),
+                "tilt": percentFromMS(CURRENT_TILT, TILT_MIN, TILT_MAX),
+                "spine": percentFromMS(CURRENT_SPINE, SPINE_MIN, SPINE_MAX),
+            }
 
         #if autoStartMode:
         if tempMode == "Arm":
@@ -568,15 +589,25 @@ def server():
     app.run(host='0.0.0.0', port=1337, threaded=True)
 
 
+
 # Saving functions
 def saveVars():
     with open(filename, 'wb') as f:
-        pickle.dump({"hsvs": hsvs, "canny": canny, "armPositions": armPositions, "cargoPositions": cargoPositions}, f)
+        pickle.dump({"hsvs": hsvs, "canny": canny, "armPositions": armPositions, "cargoPositions": cargoPositions, "currentarm": {"CURRENT_MOUTH": CURRENT_MOUTH, "CURRENT_SPINE": CURRENT_SPINE, "CURRENT_TILT": CURRENT_TILT, "CURRENT_BOTTOM": CURRENT_BOTTOM}}, f) #, "current_manual_cargo_positions": current_manual_cargo_positions
         #print("Successfully saved")
 def loadVars():
-    global hsvs, canny, armPositions, cargoPositions
+    global hsvs, canny, armPositions, cargoPositions, current_manual_cargo_positions
+    global CURRENT_MOUTH, CURRENT_SPINE, CURRENT_TILT, CURRENT_BOTTOM
     with open(filename, 'rb') as f:
         All = pickle.load(f)
+        #if All.get("current_manual_cargo_positions") != None:
+        #    current_manual_cargo_positions = All["current_manual_cargo_positions"]
+        if All.get("currentarm") != None:
+            currentarm = All["currentarm"]
+            CURRENT_MOUTH = currentarm["CURRENT_MOUTH"]
+            CURRENT_SPINE = currentarm["CURRENT_SPINE"]
+            CURRENT_TILT = currentarm["CURRENT_TILT"]
+            CURRENT_BOTTOM = currentarm["CURRENT_BOTTOM"]
         if All.get("hsvs") != None:
             hsvs = All["hsvs"]
         #print("FORDEBUGG: you're not pulling canny")
@@ -1276,15 +1307,18 @@ def carControl():
 # Arm: Functions
 def checkArmUpdatedManually():
     global last_go_arm_execusion, armUpdated, armPosition, viewed_armPosition
+    global saved
     # this is for debug mode with the menus only
     #if not autoStartMode:
     if armUpdated:
         armUpdated = False
-        go_to_coordinates(mode, viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+        changed = go_to_coordinates(mode, viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
                             shape=armShapes[viewed_armShapePosition])
+        if changed:
+            saved = False
 
     
                              
@@ -1298,11 +1332,13 @@ def checkArmUpdatedManually():
                 updateArmSliders()
                 updateArmButtons()
 
-            go_to_coordinates(mode, viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+            changed = go_to_coordinates(mode, viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
                                 shape=armShapes[viewed_armShapePosition])
+            if changed:
+                saved = False
 
             # wait between arm positions
             last_go_arm_execusion = time.time()
@@ -1313,17 +1349,20 @@ def checkArmUpdatedManually():
 
 def robotArm(Max):
     global armPosition, last_go_arm_execusion
+    global saved
 
     checkArmUpdatedManually()
 
     # this is for auto mode, execute the sequence once and then stop
     #else:
     if time.time() - last_go_arm_execusion >= delay_between_arm_execusions:
-        go_to_coordinates(mode, armPosition, MSFromPercent(armPositions[detectedShape][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+        changed = go_to_coordinates(mode, armPosition, MSFromPercent(armPositions[detectedShape][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
                             shape=detectedShape)
+        if changed:
+            saved = False
         armPosition += 1
         last_go_arm_execusion = time.time()
         return armPosition < Max
@@ -1333,14 +1372,17 @@ def robotArm(Max):
 # Arm: Functions
 def checkCargoArmUpdatedManually():
     global last_go_cargo_arm_execusion, cargoArmUpdated, cargoArmPosition, viewed_cargoArmPosition
+    global saved
     # this is for debug mode with the menus only
     #if not autoStartMode:
     if cargoArmUpdated:
         cargoArmUpdated = False
-        go_to_coordinates(mode, viewed_cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+        changed = go_to_coordinates(mode, viewed_cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
+        if changed:
+            saved = False
 
     
                              
@@ -1354,10 +1396,12 @@ def checkCargoArmUpdatedManually():
                 updateCargoArmSliders()
                 updateCargoArmButtons()
 
-            go_to_coordinates(mode, viewed_cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+            changed = go_to_coordinates(mode, viewed_cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                                 MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                 MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
                                 MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
+            if changed:
+                saved = False
 
             # wait between arm positions
             last_go_cargo_arm_execusion = time.time()
@@ -1368,16 +1412,19 @@ def checkCargoArmUpdatedManually():
 
 def cargoPass(Max):
     global cargoArmPosition, last_go_cargo_arm_execusion
+    global saved
 
     checkCargoArmUpdatedManually()
 
     # this is for auto mode, execute the sequence once and then stop
     #else:
     if time.time() - last_go_cargo_arm_execusion >= delay_between_arm_execusions:
-        go_to_coordinates(mode, cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+        changed = go_to_coordinates(mode, cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
+        if changed:
+            saved = False
         # wait between arm positions
         last_go_cargo_arm_execusion = time.time()
         cargoArmPosition += 1
@@ -1408,13 +1455,16 @@ def detecting_shape():
         if detectedAColorMate:
             cannyStuff()
 
-
+# Cargo Pass: Vars
+cargo_pos_save_period = 10
+last_time_since_changed = time.time()
 # Auto: Functions
 firstVisionPermissionRequested = False
 def autoThread():
+    global last_time_since_changed # manual cargo pass
     global allowToPickUp, pickupRequest, detectedColor, detectedShape, carControlOn, shapes, mode
     global armPosition, last_go_arm_execusion # arm mode
-    global cargoArmPosition, cargo_pass_done, last_go_cargo_arm_execusion # cargo pass
+    global cargoArmPosition, cargo_pass_done, last_go_cargo_arm_execusion, receivedAnglesBoolean # cargo pass
     global last_slider_update, saved
     global visionPermissionRequested, firstVisionPermissionRequested
     global votes # decision system
@@ -1562,12 +1612,25 @@ def autoThread():
             if not comp_day:
                 hideWindows()
                 hideArmWindows()
-                showCargoArmWindows()
-            checkCargoArmUpdatedManually()
+                #showCargoArmWindows()
+            #checkCargoArmUpdatedManually()
             resetLineFollower()
             carControlOn = False
             visionPermissionRequested = False
 
+            if receivedAnglesBoolean:
+                receivedAnglesBoolean = False
+                changed = go_to_coordinates(mode, 0, MSFromPercent(current_manual_cargo_positions["mouth"], MOUTH_MIN, MOUTH_MAX), \
+                                    MSFromPercent(current_manual_cargo_positions["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
+                                    MSFromPercent(current_manual_cargo_positions["tilt"], TILT_MIN, TILT_MAX), \
+                                    MSFromPercent(current_manual_cargo_positions["spine"], SPINE_MIN, SPINE_MAX))
+                if changed:
+                    if time.time() - last_time_since_changed >= cargo_pos_save_period:
+                        print("saving cargo pos")
+                        last_time_since_changed = time.time()
+                        saved = False
+
+            '''
             if not cargo_pass_done:
                 if not pickupRequest:
                     print("Cargo Pass: requesting permission to perform the maneuver")
@@ -1597,6 +1660,7 @@ def autoThread():
             if not comp_day:
                 if cv2.waitKey(1) == ord('q'):
                     break
+            '''
 
         elif mode == "NRF":
             if not comp_day:

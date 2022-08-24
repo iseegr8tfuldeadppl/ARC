@@ -59,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
     private int previous_playing_index;
     private EditText robotIPInput;
     private String robotIP = "";
+    boolean first_time_load = false;
+    boolean loading = false;
 
 
     @Override
@@ -204,22 +206,28 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
         }
 
         // setup communication with robot
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(running){
-                    try {
+        thread = new Thread(() -> {
+            long last_update_time = System.currentTimeMillis();
+            long update_period = 5; // 300 ms
+            while(running){
+                try {
 
-                        // connectivity checks every 5 seconds (default)
-                        if(System.currentTimeMillis() - previous_ping > ping_period){
-                            previous_ping = System.currentTimeMillis();
-                            sendCommand("");
-                        }
+                    // connectivity checks every 5 seconds (default)
+                    if(System.currentTimeMillis() - previous_ping > ping_period){
+                        previous_ping = System.currentTimeMillis();
+                        sendCommand("");
+                    }
 
+                    if(!first_time_load && !loading){
+                        loading = true;
+                        getCommand("motion");
+                    }
 
+                    if (first_time_load) {
                         // send coordinates to arm if user of the app made updates
-                        if(updated){
+                        if(updated && System.currentTimeMillis()-last_update_time >= update_period){
                             updated = false;
+                            last_update_time = System.currentTimeMillis();
 
                             // save  current position in sharedprefs
                             updatedCurrentPositionInSharedPreferences();
@@ -261,10 +269,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
                                 sendCommand("motion");
                             }
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        log(e);
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    log(e);
                 }
             }
         });
@@ -314,18 +322,23 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
     }
 
 
+    private String turn_off_arm_request = "0";
     void sendCommand(String url) {
         //log("sending " + url);
         Request request = new Request.Builder().url("http://" + robotIP + "/" + url).build();
         if(url.equals("motion")){
             FormBody formBody = new FormBody.Builder()
-                    .add("angles", bottom + "," + spine + "," + tilt + "," + mouth + "," + gate)
+                    .add("angles", (Math.round(((float)bottom)*100/180)) + "," + (Math.round(((float)spine)*100/180)) + "," + (Math.round(((float)tilt)*100/180)) + "," + (Math.round(((float)mouth)*100/180)) + "," + (Math.round(((float)gate)*100/180)))
+                    .add("turn_off_arm_request", turn_off_arm_request)
                     .build();
+            turn_off_arm_request = "0";
             request = new Request.Builder()
                     .url("http://" + robotIP + "/" + url)
                     .post(formBody)
                     .build();
-        } else if(url.equals(""){
+
+            log("sending " + (Math.round(((float)bottom)*100/180)) + "," + (Math.round(((float)spine)*100/180)) + "," + (Math.round(((float)tilt)*100/180)) + "," + (Math.round(((float)mouth)*100/180)) + "," + (Math.round(((float)gate)*100/180)));
+        } else if(url.equals("")){
             request = new Request.Builder()
                     .url("http://" + robotIP + "/" + url)
                     .get()
@@ -335,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
         try {
             Response response = client.newCall(request).execute();
             if(response.isSuccessful()){
-                log("response " + response.body().string());
+                //log("response " + response.body().string());
 
                 // if sent msg was successful, check if our login indicator is saying disconnected just incase
                 setConnected(true);
@@ -357,6 +370,56 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
 
         // if we reached this spot then probably a connectivity issue
         setConnected(false);
+    }
+    void getCommand(String url) {
+            Request request = new Request.Builder()
+                    .url("http://" + robotIP + "/" + url)
+                    .get()
+                    .build();
+
+        try {
+            Response response = client.newCall(request).execute();
+            if(response.isSuccessful()){
+                if(response.body()!=null){
+                    String responseText = response.body().string();
+                    String[] angles = responseText.split(",");
+                    bottom = Math.round(((float)Integer.parseInt(angles[0]))*100/180);
+                    spine = Math.round(((float)Integer.parseInt(angles[1]))*100/180);
+                    tilt = Math.round(((float)Integer.parseInt(angles[2]))*100/180);
+                    mouth = Math.round(((float)Integer.parseInt(angles[3]))*100/180);
+                    log("got " + bottom + " " + spine + " " + tilt + " " + mouth);
+
+                    handler.post(() -> {
+                        bottomSeekbar.setProgress(bottom);
+                        spineSeekbar.setProgress(spine);
+                        tiltSeekbar.setProgress(tilt);
+                        mouthSeekbar.setProgress(mouth);
+                    });
+
+                    // if sent msg was successful, check if our login indicator is saying disconnected just incase
+                    setConnected(true);
+                }
+                first_time_load = true;
+                loading = false;
+                return;
+            } else {
+                //log("response unsuccessful");
+            }
+        } catch(ConnectException e){
+            log("couldn't connect " + e);
+        } catch(SocketTimeoutException e){
+            log("couldn't connect " + e);
+        } catch(IOException e){
+            log("error when sending http " + e);
+            //e.printStackTrace();
+        }catch(Exception e){
+            log("error when sending http " + e);
+            //e.printStackTrace();
+        }
+
+        // if we reached this spot then probably a connectivity issue
+        setConnected(false);
+        loading = false;
     }
 
     private void setConnected(boolean b) {
@@ -622,6 +685,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
 
         playAll.setVisibility(View.VISIBLE);
         stopPlayAll.setVisibility(View.GONE);
+    }
+
+    public void turnOffClicked(View view) {
+        turn_off_arm_request = "1";
     }
 
     public class Coordinate {

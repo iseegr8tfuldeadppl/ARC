@@ -43,9 +43,18 @@ def go_to_coordinates(mode, position, m, b, t, s, step=30, delay=0.02, shape=Non
     global CURRENT_MOUTH, CURRENT_BOTTOM, CURRENT_TILT, CURRENT_SPINE
 
     if mode == "Cargo Pass":
-        delay = 0.05
-        step = 30
-    elif mode == "Arm":
+        CURRENT_MOUTH = m
+        CURRENT_BOTTOM = b
+        CURRENT_TILT = t
+        CURRENT_SPINE = s
+
+        pi.set_servo_pulsewidth(MOUTH, CURRENT_MOUTH)
+        pi.set_servo_pulsewidth(BOTTOM, CURRENT_BOTTOM)
+        pi.set_servo_pulsewidth(TILT, CURRENT_TILT)
+        pi.set_servo_pulsewidth(SPINE, CURRENT_SPINE)
+        return m!=CURRENT_MOUTH or b!=CURRENT_BOTTOM or t!=CURRENT_TILT or s!=CURRENT_SPINE
+    
+    if mode == "Arm":
         if shape == "Circles":
             delay = 0.05
             step = 30
@@ -80,45 +89,48 @@ def go_to_coordinates(mode, position, m, b, t, s, step=30, delay=0.02, shape=Non
     tilt_step = (t - CURRENT_TILT) / step
     spine_step = (s - CURRENT_SPINE) / step
 
-    #before = millis()
-    for i in range(step):
-        if CURRENT_MOUTH > 2500:
-            CURRENT_MOUTH = 2500
-        elif CURRENT_MOUTH < 500 and CURRENT_MOUTH != 0:
-            CURRENT_MOUTH = 500
+    if m!=CURRENT_MOUTH or b!=CURRENT_BOTTOM or t!=CURRENT_TILT or s!=CURRENT_SPINE:
+        #before = millis()
+        for i in range(step):
+            if CURRENT_MOUTH > 2500:
+                CURRENT_MOUTH = 2500
+            elif CURRENT_MOUTH < 500 and CURRENT_MOUTH != 0:
+                CURRENT_MOUTH = 500
 
-        if CURRENT_BOTTOM > 2500:
-            CURRENT_BOTTOM = 2500
-        elif CURRENT_BOTTOM < 500 and CURRENT_BOTTOM != 0:
-            CURRENT_BOTTOM = 500
+            if CURRENT_BOTTOM > 2500:
+                CURRENT_BOTTOM = 2500
+            elif CURRENT_BOTTOM < 500 and CURRENT_BOTTOM != 0:
+                CURRENT_BOTTOM = 500
 
-        if CURRENT_TILT > 2500:
-            CURRENT_TILT = 2500
-        elif CURRENT_TILT < 500 and CURRENT_TILT != 0:
-            CURRENT_TILT = 500
+            if CURRENT_TILT > 2500:
+                CURRENT_TILT = 2500
+            elif CURRENT_TILT < 500 and CURRENT_TILT != 0:
+                CURRENT_TILT = 500
 
-        if CURRENT_SPINE > 2500:
-            CURRENT_SPINE = 2500
-        elif CURRENT_SPINE < 500 and CURRENT_SPINE != 0:
-            CURRENT_SPINE = 500
+            if CURRENT_SPINE > 2500:
+                CURRENT_SPINE = 2500
+            elif CURRENT_SPINE < 500 and CURRENT_SPINE != 0:
+                CURRENT_SPINE = 500
 
-        CURRENT_MOUTH += mouth_step
-        pi.set_servo_pulsewidth(MOUTH, round(CURRENT_MOUTH))
-        CURRENT_BOTTOM += bottom_step
-        pi.set_servo_pulsewidth(BOTTOM, round(CURRENT_BOTTOM))
-        CURRENT_TILT += tilt_step
-        pi.set_servo_pulsewidth(TILT, round(CURRENT_TILT))
-        CURRENT_SPINE += spine_step
-        pi.set_servo_pulsewidth(SPINE, round(CURRENT_SPINE))
-        sleep(delay)
+            CURRENT_MOUTH += mouth_step
+            pi.set_servo_pulsewidth(MOUTH, round(CURRENT_MOUTH))
+            CURRENT_BOTTOM += bottom_step
+            pi.set_servo_pulsewidth(BOTTOM, round(CURRENT_BOTTOM))
+            CURRENT_TILT += tilt_step
+            pi.set_servo_pulsewidth(TILT, round(CURRENT_TILT))
+            CURRENT_SPINE += spine_step
+            pi.set_servo_pulsewidth(SPINE, round(CURRENT_SPINE))
+            sleep(delay)
 
-    CURRENT_MOUTH = m
-    CURRENT_BOTTOM = b
-    CURRENT_TILT = t
-    CURRENT_SPINE = s
-    print("done doing move at position", position)
+        CURRENT_MOUTH = m
+        CURRENT_BOTTOM = b
+        CURRENT_TILT = t
+        CURRENT_SPINE = s
+        print("done doing move at position", position)
 
     pi.set_servo_pulsewidth(MOUTH, CURRENT_MOUTH)
     pi.set_servo_pulsewidth(BOTTOM, CURRENT_BOTTOM)
     pi.set_servo_pulsewidth(TILT, CURRENT_TILT)
     pi.set_servo_pulsewidth(SPINE, CURRENT_SPINE)
+
+    return m!=CURRENT_MOUTH or b!=CURRENT_BOTTOM or t!=CURRENT_TILT or s!=CURRENT_SPINE
