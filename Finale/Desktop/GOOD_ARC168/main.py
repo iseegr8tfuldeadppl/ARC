@@ -955,7 +955,7 @@ def cannyStuff():
             continue
         print("surface_percentage", surface_percentage)
 
-        if surface_percentage >= 0.65 and surface_percentage < 0.87 and not len(approx)==4:
+        if surface_percentage >= 0.65 and surface_percentage < 0.87: # and not len(approx)==4
             votes["Circles"] += 1
             return
 
