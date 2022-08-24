@@ -1317,8 +1317,8 @@ def checkArmUpdatedManually():
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
                             shape=armShapes[viewed_armShapePosition])
-        if changed:
-            saved = False
+        #if changed:
+        #    saved = False
 
     
                              
@@ -1337,8 +1337,8 @@ def checkArmUpdatedManually():
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
                                 shape=armShapes[viewed_armShapePosition])
-            if changed:
-                saved = False
+            #if changed:
+            #    saved = False
 
             # wait between arm positions
             last_go_arm_execusion = time.time()
@@ -1361,8 +1361,8 @@ def robotArm(Max):
                             MSFromPercent(armPositions[detectedShape][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
                             shape=detectedShape)
-        if changed:
-            saved = False
+        #if changed:
+        #    saved = False
         armPosition += 1
         last_go_arm_execusion = time.time()
         return armPosition < Max
@@ -1381,8 +1381,8 @@ def checkCargoArmUpdatedManually():
                             MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
-        if changed:
-            saved = False
+        #if changed:
+        #    saved = False
 
     
                              
@@ -1400,8 +1400,8 @@ def checkCargoArmUpdatedManually():
                                 MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                 MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
                                 MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
-            if changed:
-                saved = False
+            #if changed:
+            #    saved = False
 
             # wait between arm positions
             last_go_cargo_arm_execusion = time.time()
@@ -1423,8 +1423,8 @@ def cargoPass(Max):
                             MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
-        if changed:
-            saved = False
+        #if changed:
+        #    saved = False
         # wait between arm positions
         last_go_cargo_arm_execusion = time.time()
         cargoArmPosition += 1
@@ -1624,11 +1624,11 @@ def autoThread():
                                     MSFromPercent(current_manual_cargo_positions["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                     MSFromPercent(current_manual_cargo_positions["tilt"], TILT_MIN, TILT_MAX), \
                                     MSFromPercent(current_manual_cargo_positions["spine"], SPINE_MIN, SPINE_MAX))
-                if changed:
-                    if time.time() - last_time_since_changed >= cargo_pos_save_period:
-                        print("saving cargo pos")
-                        last_time_since_changed = time.time()
-                        saved = False
+                #if changed:
+                #    if time.time() - last_time_since_changed >= cargo_pos_save_period:
+                #        print("saving cargo pos")
+                #        last_time_since_changed = time.time()
+                #        saved = False
 
             '''
             if not cargo_pass_done:
