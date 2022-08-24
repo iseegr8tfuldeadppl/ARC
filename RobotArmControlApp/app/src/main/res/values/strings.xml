@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Arm - MustShop</string>
+    <string name="gate">Gate</string>
+    <string name="bottom">Bottom</string>
+    <string name="spine">Spine</string>
+    <string name="mouth">Mouth</string>
+    <string name="placeholder">~</string>
+    <string name="tilt">Tilt</string>
+    <string name="indexplaceholder">#~</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="arm_mustshop_arduino">Arm - MustShop Arduino</string>
+    <string name="connected">Connected</string>
+    <string name="remove">Remove</string>
+    <string name="play_all">Play All</string>
+    <string name="stop">Stop</string>
+</resources>

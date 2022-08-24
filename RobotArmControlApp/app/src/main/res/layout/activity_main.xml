@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <!-- Main Page Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+
+
+        <!-- Task bar -->
+        <FrameLayout
+            android:background="@color/orange"
+            android:paddingHorizontal="10dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <ImageView
+                    android:layout_marginHorizontal="5dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:layout_gravity="start|center_vertical"
+                    android:id="@+id/bluetoothImage"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:textSize="22sp"
+                        android:id="@+id/appTitle"
+                        android:lines="1"
+                        android:singleLine="true"
+                        android:maxLines="1"
+                        android:text="@string/arm_mustshop_arduino"
+                        android:textColor="@android:color/white"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical" />
+                    <TextView
+                        android:paddingHorizontal="10dp"
+                        android:id="@+id/connectionIndicator"
+                        android:layout_gravity="center"
+                        android:textSize="13sp"
+                        android:textColor="@color/red"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/disconnected" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <ImageView
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="openSettingsClicked"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginHorizontal="10dp"
+                android:id="@+id/settingsImage"
+                android:layout_width="40dp"
+                android:layout_height="40dp" />
+        </FrameLayout>
+
+        <!-- Manual IP Input -->
+        <EditText
+            android:id="@+id/robotIPInput"
+            android:hint="Robot IP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp" />
+
+        <!-- Size -->
+        <LinearLayout
+            android:weightSum="2"
+            android:paddingTop="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+            <TextView
+                android:layout_weight="1"
+                android:textColor="@color/orange"
+                android:id="@+id/controlsTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:paddingHorizontal="20dp"
+                android:textSize="@dimen/titlesize"
+                android:text="Controls"
+                android:textStyle="bold" />
+
+            <!-- Control buttons -->
+            <LinearLayout
+                android:layout_marginHorizontal="5dp"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end|center_vertical">
+                <TextView
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="editCoordinatesClicked"
+                    android:textColor="@color/white"
+                    android:id="@+id/controlsEdit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:textSize="16sp"
+                    android:visibility="gone"
+                    android:text="Save"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="addCoordinatesClicked"
+                    android:textColor="@color/white"
+                    android:id="@+id/controlsAdd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:textSize="16sp"
+                    android:text="Add"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Motor Controls -->
+        <LinearLayout
+            android:paddingVertical="20dp"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Bottom Seekbar -->
+            <LinearLayout
+                android:weightSum="12"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:textStyle="bold"
+                    android:lines="1"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Bottom" />
+                <LinearLayout
+                    android:gravity="center"
+                    android:layout_weight="10"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/bottomAngleIndicator"
+                        android:textStyle="bold"
+                        android:lines="1"
+                        android:singleLine="true"
+                        android:maxLines="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FD792E"
+                        android:text="90" />
+                    <SeekBar
+                        android:max="180"
+                        android:id="@+id/bottomSeekbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Spine Seekbar -->
+            <LinearLayout
+                android:weightSum="12"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:textStyle="bold"
+                    android:lines="1"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Spine" />
+                <LinearLayout
+                    android:gravity="center"
+                    android:layout_weight="10"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/spineAngleIndicator"
+                        android:textStyle="bold"
+                        android:lines="1"
+                        android:singleLine="true"
+                        android:maxLines="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FD792E"
+                        android:text="90" />
+                    <SeekBar
+                        android:max="180"
+                        android:id="@+id/spineSeekbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Tilt Seekbar -->
+            <LinearLayout
+                android:weightSum="12"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:textStyle="bold"
+                    android:lines="1"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Tilt" />
+                <LinearLayout
+                    android:gravity="center"
+                    android:layout_weight="10"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tiltAngleIndicator"
+                        android:textStyle="bold"
+                        android:lines="1"
+                        android:singleLine="true"
+                        android:maxLines="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FD792E"
+                        android:text="90" />
+                    <SeekBar
+                        android:max="180"
+                        android:id="@+id/tiltSeekbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Mouth Seekbar -->
+            <LinearLayout
+                android:textStyle="bold"
+                android:weightSum="12"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:textStyle="bold"
+                    android:lines="1"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Mouth" />
+                <LinearLayout
+                    android:gravity="center"
+                    android:layout_weight="10"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/mouthAngleIndicator"
+                        android:textStyle="bold"
+                        android:lines="1"
+                        android:singleLine="true"
+                        android:maxLines="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FD792E"
+                        android:text="90" />
+                    <SeekBar
+                        android:max="180"
+                        android:id="@+id/mouthSeekbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Gate Seekbar -->
+            <LinearLayout
+                android:textStyle="bold"
+                android:weightSum="12"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="5dp"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:textStyle="bold"
+                    android:lines="1"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:layout_weight="2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Gate" />
+                <LinearLayout
+                    android:gravity="center"
+                    android:layout_weight="10"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/gateAngleIndicator"
+                        android:textStyle="bold"
+                        android:lines="1"
+                        android:singleLine="true"
+                        android:maxLines="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FD792E"
+                        android:text="90" />
+                    <SeekBar
+                        android:max="180"
+                        android:id="@+id/gateSeekbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Coordinates List Title-Bar -->
+        <LinearLayout
+            android:weightSum="2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+            <TextView
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:textColor="@color/orange"
+                android:id="@+id/coordinatesTitle"
+                android:layout_height="wrap_content"
+                android:gravity="start"
+                android:paddingHorizontal="20dp"
+                android:textSize="@dimen/titlesize"
+                android:text="Coordinates"
+                android:textStyle="bold" />
+            <LinearLayout
+                android:paddingHorizontal="5dp"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical|end">
+                <TextView
+                    android:visibility="gone"
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="playAllClicked"
+                    android:textColor="@color/white"
+                    android:id="@+id/playAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:textSize="16sp"
+                    android:text="@string/play_all"
+                    android:textStyle="bold" />
+                <TextView
+                    android:visibility="gone"
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@drawable/button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:onClick="stopPlayingClicked"
+                    android:textColor="@color/white"
+                    android:id="@+id/stopPlayAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:textSize="16sp"
+                    android:text="@string/stop"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Coordinate List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:visibility="gone"
+            android:id="@+id/coordinatesRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <LinearLayout
+            android:id="@+id/emptyCoordinateListIndicatorPage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/emptyCoordinateListIndicatorImage"
+                android:src="@drawable/arrowup"
+                android:layout_width="85dp"
+                android:layout_height="85dp" />
+            <TextView
+                android:id="@+id/emptyCoordinateListIndicatorText"
+                android:paddingHorizontal="15dp"
+                android:gravity="center"
+                android:textColor="@color/darkerorange"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textStyle="bold"
+                android:textSize="27sp"
+                android:text="You have 0 coordinates saved\n\nchoose a position then press Add"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

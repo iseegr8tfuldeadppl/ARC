@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Main/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/layout/activity_main.xml" value="0.21467391304347827" />
+        <entry key="..\:/Users/kream/Desktop/ARC/RobotArmControlApp/app/src/main/res/layout/activity_main.xml" value="0.35260416666666666" />
+        <entry key="..\:/Users/madri/Desktop/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/drawable/button.xml" value="0.3828125" />
+        <entry key="..\:/Users/madri/Desktop/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/drawable/down.xml" value="0.3828125" />
+        <entry key="..\:/Users/madri/Desktop/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/drawable/play.xml" value="0.3828125" />
+        <entry key="..\:/Users/madri/Desktop/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/drawable/up.xml" value="0.3828125" />
+        <entry key="..\:/Users/madri/Desktop/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/layout/activity_main.xml" value="0.33" />
+        <entry key="..\:/Users/madri/Desktop/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/layout/coordinate.xml" value="0.33" />
+        <entry key="..\:/Users/madri/Desktop/new3D/3DRobotics/robotarms/RobotArmsCode/ArmMustShopApp/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.14635416666666667" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
