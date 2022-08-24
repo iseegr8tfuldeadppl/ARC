@@ -39,16 +39,41 @@ def turnOffArm():
     pi.set_servo_pulsewidth(SPINE, 0) #spine 500-2000
 turnOffArm()
 
-def go_to_coordinates(mode, position, m, b, t, s, step=30, delay=0.05):
+def go_to_coordinates(mode, position, m, b, t, s, step=30, delay=0.02, shape=None): # 0.05
     global CURRENT_MOUTH, CURRENT_BOTTOM, CURRENT_TILT, CURRENT_SPINE
 
-    if mode != "Cargo Pass":
-        if position == 3:
+    if mode == "Cargo Pass":
+        delay = 0.05
+        step = 30
+    elif mode == "Arm":
+        if shape == "Circles":
             delay = 0.05
-            step = 80
-        elif position == 4:
-            delay = 0.03
-            step = 100
+            step = 30
+            if position == 3:
+                delay = 0.02 # 0.05
+                step = 80 # 80
+            elif position == 4:
+                delay = 0.01 # 0.03
+                step = 100 # 100
+
+        elif shape == "Squares":
+            if position == 3:
+                delay = 0.02 # 0.05
+                step = 80 # 80
+            elif position == 4:
+                delay = 0.02 # 0.03
+                step = 100 # 100
+
+        elif shape == "Rectangles":
+            if position == 3:
+                delay = 0.02 # 0.05
+                step = 80 # 80
+            elif position == 4:
+                delay = 0.01 # 0.03
+                step = 100 # 100
+
+        elif shape == "Triangles":
+            print("oof issa triangle")
 
     mouth_step = (m - CURRENT_MOUTH) / step
     bottom_step = (b - CURRENT_BOTTOM) / step

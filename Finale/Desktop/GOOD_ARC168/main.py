@@ -942,7 +942,7 @@ def cannyStuff():
         cv2.drawContours(ogframe, [contour], 0, (255, 255, 255), 2)
             
         #print(surface*100/(w*h))
-        if surface_percentage < 0.1:
+        if surface_percentage < 0.35:# CAN GIVE ERRORS HERE: if it's less than 0.35 then might ignore real ones if their color detection is too poor
             continue
         print("surface_percentage", surface_percentage)
 
@@ -1272,7 +1272,8 @@ def checkArmUpdatedManually():
         go_to_coordinates(mode, viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
-                            MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX))
+                            MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
+                            shape=armShapes[viewed_armShapePosition])
 
     
                              
@@ -1289,7 +1290,8 @@ def checkArmUpdatedManually():
             go_to_coordinates(mode, viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
-                                MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX))
+                                MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
+                                shape=armShapes[viewed_armShapePosition])
 
             # wait between arm positions
             last_go_arm_execusion = time.time()
@@ -1298,7 +1300,7 @@ def checkArmUpdatedManually():
             armPosition += 1
             armPosition = wrap2(armPosition)
 
-def robotArm():
+def robotArm(Max):
     global armPosition, last_go_arm_execusion
 
     checkArmUpdatedManually()
@@ -1309,10 +1311,12 @@ def robotArm():
         go_to_coordinates(mode, armPosition, MSFromPercent(armPositions[detectedShape][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
-                            MSFromPercent(armPositions[detectedShape][armPosition]["spine"], SPINE_MIN, SPINE_MAX))
+                            MSFromPercent(armPositions[detectedShape][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
+                            shape=detectedShape)
         armPosition += 1
         last_go_arm_execusion = time.time()
-        return armPosition < len(armPositions[detectedShape])
+        return armPosition < Max
+    return True
 
 
 # Arm: Functions
@@ -1351,7 +1355,7 @@ def checkCargoArmUpdatedManually():
             cargoArmPosition += 1
             cargoArmPosition = wrap4(cargoArmPosition)
 
-def cargoPass():
+def cargoPass(Max):
     global cargoArmPosition, last_go_cargo_arm_execusion
 
     checkCargoArmUpdatedManually()
@@ -1366,8 +1370,7 @@ def cargoPass():
         # wait between arm positions
         last_go_cargo_arm_execusion = time.time()
         cargoArmPosition += 1
-        print(cargoArmPosition)
-        return cargoArmPosition < len(cargoPositions)
+        return cargoArmPosition < Max
     return True
 
     
@@ -1398,8 +1401,8 @@ def detecting_shape():
 # Auto: Functions
 def autoThread():
     global allowToPickUp, pickupRequest, detectedColor, detectedShape, carControlOn, shapes, mode
-    global armPosition # arm mode
-    global cargoArmPosition, cargo_pass_done # cargo pass
+    global armPosition, last_go_arm_execusion # arm mode
+    global cargoArmPosition, cargo_pass_done, last_go_cargo_arm_execusion # cargo pass
     global last_slider_update, saved
     global visionPermissionRequested
     global votes # decision system
@@ -1472,25 +1475,31 @@ def autoThread():
             cargo_pass_done = False
             visionPermissionRequested = False
 
-            if allowToPickUp and shapes > 0:
+            if allowToPickUp: ## and shapes > 0
                 allowToPickUp = False
-                shapes -= 1
+                #shapes -= 1
 
-                detectedColor = "Unknown"
-                detectedShape = "Unknown"
+                #detectedColor = "Unknown"
+                #detectedShape = "Unknown"
 
                 # pickup loop
                 armPosition = 0
-                while robotArm():
+                while robotArm(len(armPositions[detectedShape])):
                     pass
 
                 # then re-execute the first position of the arm so it can return to point of start
                 armPosition = 0
-                robotArm()
+                last_go_arm_execusion = 0
+                while robotArm(1):
+                    pass
                 armPosition = 0 # then reset arm position
                 turnOffArm() # DEBUG: then turn arm off
+                print("Finished pickup")
 
+                mode = "Vision"
+                print("AUTO: Vision mode")
                 # after pickup, either send us back to vision or move on to next step
+                '''
                 if shapes <= 0:
                     print("Ran outta shapes")
                     mode = "Car Control"
@@ -1498,6 +1507,7 @@ def autoThread():
                 else:
                     mode = "Vision"
                     print("AUTO: Vision mode")
+                '''
 
             if not comp_day:
                 if cv2.waitKey(1) == ord('q'):
@@ -1540,12 +1550,14 @@ def autoThread():
                     cargo_pass_done = True
                     # pickup loop
                     cargoArmPosition = 0
-                    while cargoPass():
+                    last_go_cargo_arm_execusion = 0
+                    while cargoPass(len(cargoPositions)):
                         pass
 
                     # then re-execute the first position of the arm so it can return to point of start
                     cargoArmPosition = 0
-                    cargoPass()
+                    while cargoPass(1):
+                        pass
                     cargoArmPosition = 0 # then reset arm position
                     turnOffArm() # DEBUG: then turn arm off
             else:
@@ -1650,6 +1662,7 @@ try:
     loadVars()
     print("Loaded previously saved color ranges")
 except Exception as e:
+    print(e)
     saveVars()
     print("First time launch, using defaultcolor ranges")
 
