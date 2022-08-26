@@ -83,7 +83,7 @@
 
         <!-- Size -->
         <LinearLayout
-            android:weightSum="2"
+            android:weightSum="3"
             android:paddingTop="15dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -96,7 +96,8 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="start"
-                android:paddingHorizontal="20dp"
+                android:paddingStart="20dp"
+                android:paddingLeft="20dp"
                 android:textSize="@dimen/titlesize"
                 android:text="Controls"
                 android:textStyle="bold" />
@@ -104,7 +105,7 @@
             <!-- Control buttons -->
             <LinearLayout
                 android:layout_marginHorizontal="5dp"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -127,7 +128,7 @@
                     android:text="Save"
                     android:textStyle="bold" />
                 <TextView
-                    android:layout_marginHorizontal="5dp"
+                    android:layout_marginEnd="5dp"
                     android:background="@drawable/button"
                     android:clickable="true"
                     android:focusable="true"
@@ -140,7 +141,7 @@
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="5dp"
                     android:textSize="16sp"
-                    android:text="Turn Off"
+                    android:text="NRF/CAR"
                     android:textStyle="bold" />
                 <TextView
                     android:layout_marginHorizontal="5dp"

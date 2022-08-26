@@ -2,19 +2,22 @@ import traceback
 from nrf24 import *
 import time
 
-reading_address = "1SRVR"
-writing_address = "1CLNT"
+reading_address = "readp" # 1SRVR
+writing_address = "writp" # 1CLNT
 
+nrf = None
 def sendNRFFinishMsg(pi):
+    global nrf
     # bytearray([0x54, 0x43]).decode()
 
     # Create NRF24 object.
     # PLEASE NOTE: PA level is set to MIN, because test sender/receivers are often close to each other, and then MIN works better.
-    nrf = NRF24(pi, ce=25, payload_size=RF24_PAYLOAD.DYNAMIC, channel=0x76, data_rate=RF24_DATA_RATE.RATE_250KBPS, pa_level=RF24_PA.MIN)
-    nrf.set_address_bytes(len(reading_address))
-    nrf.set_retransmission(15, 15)
-    nrf.open_writing_pipe(writing_address)
-    nrf.open_reading_pipe(RF24_RX_ADDR.P1, reading_address)
+    if nrf == None:
+        nrf = NRF24(pi, ce=25, payload_size=RF24_PAYLOAD.DYNAMIC, channel=0x76, data_rate=RF24_DATA_RATE.RATE_250KBPS, pa_level=RF24_PA.MIN)
+        nrf.set_address_bytes(len(reading_address))
+        nrf.set_retransmission(15, 15)
+        nrf.open_writing_pipe(writing_address)
+        nrf.open_reading_pipe(RF24_RX_ADDR.P0, reading_address)
 
     # Display the content of NRF24L01 device registers.
     #nrf.show_registers()
@@ -23,7 +26,7 @@ def sendNRFFinishMsg(pi):
     while True:
         try:
             nrf.reset_packages_lost()
-            nrf.send(bytes("FINISH", encoding='utf-8'))
+            nrf.send(bytes("Finish", encoding='utf-8'))
 
             while nrf.is_sending():
                 time.sleep(0.0004)

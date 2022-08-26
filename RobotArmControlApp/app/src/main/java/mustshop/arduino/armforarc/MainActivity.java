@@ -331,6 +331,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
                     .add("angles", (Math.round(((float)bottom)*100/180)) + "," + (Math.round(((float)spine)*100/180)) + "," + (Math.round(((float)tilt)*100/180)) + "," + (Math.round(((float)mouth)*100/180)) + "," + (Math.round(((float)gate)*100/180)))
                     .add("turn_off_arm_request", turn_off_arm_request)
                     .build();
+            log("turn_off_arm_request " + turn_off_arm_request);
             turn_off_arm_request = "0";
             request = new Request.Builder()
                     .url("http://" + robotIP + "/" + url)
@@ -687,8 +688,16 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
         stopPlayAll.setVisibility(View.GONE);
     }
 
+    private boolean nrf_or_cargo = false;
     public void turnOffClicked(View view) {
-        turn_off_arm_request = "1";
+        updated = true;
+        if(nrf_or_cargo){
+            nrf_or_cargo = false;
+            turn_off_arm_request = "1";
+        } else {
+            nrf_or_cargo = true;
+            turn_off_arm_request = "2";
+        }
     }
 
     public class Coordinate {

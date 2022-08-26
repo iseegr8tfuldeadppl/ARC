@@ -3,12 +3,16 @@
 #define PIN_RF24_CSN             9
 #define PIN_RF24_CE             10
  
-#define NRF24_DYNAMIC_PAYLOAD    1           
-byte rf24_tx[6] = "1SRVR"; // sending
-byte rf24_rx[6] = "1CLNT"; // receiving
+#define NRF24_DYNAMIC_PAYLOAD 1
+byte rf24_tx[6] = "readp"; // sending
+byte rf24_rx[6] = "writp"; // receiving
 
 byte payload[32];
 char chars[32];
+
+#include <Servo.h>
+
+Servo motor;
 
 RF24 radio(PIN_RF24_CE, PIN_RF24_CSN);
 
@@ -16,9 +20,16 @@ void setup() {
   Serial.begin(115200);
   nrf24_setup();
   radio.startListening();
+  motor.attach(5);
+  motor.write(0);
 }
 
 void loop() {
+  motor.write(0);
+  delay(1000);
+  motor.write(180);
+  delay(1000);
+  
   while (radio.available()) {
     read_response();
   }
@@ -45,10 +56,10 @@ void nrf24_setup() {
   radio.setPALevel(RF24_PA_MIN);
   radio.setRetries(10, 15);              
   radio.setDataRate(RF24_250KBPS);          
-  radio.setChannel(100);
+  radio.setChannel(0x76);
   radio.setCRCLength(RF24_CRC_16);
   radio.setPayloadSize(32);
   radio.openWritingPipe(rf24_tx);
-  radio.openReadingPipe(1, rf24_rx);
+  radio.openReadingPipe(0, rf24_rx);
   radio.startListening();
 }

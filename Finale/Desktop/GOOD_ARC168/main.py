@@ -490,6 +490,7 @@ print("Initial mode is", mode, "btw")
 receivedAnglesBoolean = False
 @app.route('/motion', methods=["GET", "POST"])
 def motion_feed():
+    global mode
     global current_manual_cargo_positions, receivedAnglesBoolean
     if request.method == 'GET':
         if current_manual_cargo_positions == None:
@@ -499,6 +500,7 @@ def motion_feed():
             return str(current_manual_cargo_positions["bottom"]) + "," + str(current_manual_cargo_positions["spine"]) + "," + str(current_manual_cargo_positions["tilt"]) + "," + str(current_manual_cargo_positions["mouth"]) + "," + "90"
     elif request.method == 'POST':
         receivedAngles = request.form.get("angles").split(",")
+        donrf = request.form.get("turn_off_arm_request")
         receivedAnglesBoolean = True
         current_manual_cargo_positions = {
             "mouth": int(receivedAngles[3]),
@@ -506,6 +508,13 @@ def motion_feed():
             "tilt": int(receivedAngles[2]),
             "spine": int(receivedAngles[1]),
         }
+        print(donrf)
+        if donrf == "1":
+            print("SWITCHING MODE TO NRF")
+            mode = "NRF"
+        elif donrf == "2":
+            print("SWITCHING MODE TO Cargo")
+            mode = "Cargo Pass"
         print(current_manual_cargo_positions)
         return "Gucci"
 
