@@ -706,6 +706,24 @@ def updateSliders():
             break
         index += 1
 
+# Vision: GUI Functions
+ogframeHSV = None
+checkpixel_left_button_down = False
+def checkPixel(event, x, y, flags, param):
+    global checkpixel_left_button_down
+    if event==cv2.EVENT_MOUSEMOVE:
+        if checkpixel_left_button_down:
+            if type(ogframeHSV) != None:
+                print("HSV VALUES HERE", ogframeHSV[y][x])
+    elif event==cv2.EVENT_LBUTTONDOWN:
+        checkpixel_left_button_down = True
+        if type(ogframeHSV) != None:
+            print("HSV VALUES HERE", ogframeHSV[y][x])
+    elif event==cv2.EVENT_LBUTTONUP:
+        checkpixel_left_button_down = False
+
+
+
 def switchColor(event, x, y, flags, param):
     global color_button_down, selectedColorIndex
     if event==cv2.EVENT_LBUTTONDOWN:
@@ -993,7 +1011,9 @@ def cannyStuff():
         #print(surface*100/(w*h))
         if surface_percentage < 0.35:# CAN GIVE ERRORS HERE: if it's less than 0.35 then might ignore real ones if their color detection is too poor
             continue
-        print("surface_percentage", surface_percentage)
+
+        if not checkpixel_left_button_down:
+            print("surface_percentage", surface_percentage)
 
         if surface_percentage >= 0.65 and surface_percentage < 0.87: # and not len(approx)==4
             votes["Circles"] += 1
@@ -1046,6 +1066,7 @@ def colorStuff():
     global ogframe # debugging
     global mask
     global votes # decision system
+    global ogframeHSV
     # detect contours of pieces
     for name, content in hsvs.items():
 
@@ -1101,6 +1122,7 @@ emptyCannyImage = None
 def VisionInits():
     global emptyCannyImage
     cv2.namedWindow("output")
+    cv2.setMouseCallback("output", checkPixel)
 
     # HSV: Inits
     cv2.namedWindow("sliders")
@@ -1515,18 +1537,17 @@ def autoThread():
                     if allowToPickUp:
                         firstVisionPermissionRequested = True
                     else:
-                        print("Vision: (DEBUG: permission to start vision sent)")
-                        pickupRequest = True
+                        if not pickupRequest:
+                            print("Vision: (DEBUG: permission to start vision sent)")
+                            pickupRequest = True
 
                 if firstVisionPermissionRequested:
                     if not visionPermissionRequested:
                         print("Vision: (DEBUG: permission to move onto arm sent)")
                         visionPermissionRequested = True
-                        allowToPickUp = False
                         pickupRequest = True
 
                     if allowToPickUp: # i requested 
-                        allowToPickUp = False
                         pickupRequest = True
                         shapes = ogShapes
                         mode = "Arm"
