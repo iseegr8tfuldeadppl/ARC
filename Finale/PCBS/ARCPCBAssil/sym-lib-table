@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "DRV8833")(type "KiCad")(uri "${KIPRJMOD}/DRV8833.kicad_sym")(options "")(descr ""))
+  (lib (name "ARDUINONANO")(type "KiCad")(uri "${KIPRJMOD}/ARDUINONANO.kicad_sym")(options "")(descr ""))
+)
