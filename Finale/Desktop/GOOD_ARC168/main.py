@@ -485,7 +485,7 @@ log.setLevel(logging.ERROR)
 def index():
     return "Bozo"
 
-mode = "Vision" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
+mode = "Arm" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
 print("Initial mode is", mode, "btw")
 receivedAnglesBoolean = False
 @app.route('/motion', methods=["GET", "POST"])
