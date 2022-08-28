@@ -70,8 +70,8 @@ canny = {
     "countours_to_display": 7,
     "minGrayThresh": 127, #195
     "maxGrayThresh": 255, #255
-    "minCannyThresh": 34,
-    "maxCannyThresh": 40,
+    "minCannyThresh": 34, # 13
+    "maxCannyThresh": 40, # 13
     "gaussianBlurKernelSize": 5,
     "errorFromCenterX": 0.3,
     "errorFromCenterY": 0.3
@@ -455,6 +455,8 @@ lineFollowerRunning = False
 ogframe = None
 threshold = None
 dst = None
+edges = None
+dilated = None
 windows_shown = False
 selectedColor = "Unselected"
 selectedColorIndex = 0
@@ -464,7 +466,8 @@ button_down = False
 color_button_down = False
 
 # Canny variables
-epsilonCoeff = 0.04
+print("you  might need to tune epsilon")
+epsilonCoeff = 0.01 # 0.04
 scale_percent = 100 # percent of original size
 
 # Saving variables
@@ -485,7 +488,7 @@ log.setLevel(logging.ERROR)
 def index():
     return "Bozo"
 
-mode = "Arm" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
+mode = "Vision" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
 print("Initial mode is", mode, "btw")
 receivedAnglesBoolean = False
 @app.route('/motion', methods=["GET", "POST"])
@@ -954,20 +957,29 @@ contours = []
 def cannyStuff():
     global contours
     global ogframe
-    global threshold, dst # debugging
+    global threshold, dst, edges, dilated # debugging
     global votes # for decisions
-    #dst = cv2.GaussianBlur(mask, (9, 9), cv2.BORDER_DEFAULT)
-    #edges = cv2.Canny(mask, canny["minCannyThresh"], canny["maxCannyThresh"])
-    #_, threshold = cv2.threshold(edges, canny["minGrayThresh"], canny["maxGrayThresh"], cv2.THRESH_BINARY)
-    #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
-    #dilated = cv2.dilate(edges, kernel)
+    gray = cv2.cvtColor(ogframe, cv2.COLOR_BGR2GRAY)
+    dst = cv2.GaussianBlur(gray, (5, 5), cv2.BORDER_DEFAULT)
+    
+    '''
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
+    dilated2 = cv2.dilate(dst, kernel)
+    edges = cv2.Canny(dilated2, canny["minCannyThresh"], canny["maxCannyThresh"])
+    _, threshold = cv2.threshold(edges, canny["minGrayThresh"], canny["maxGrayThresh"], cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
+    dilated = cv2.dilate(threshold, kernel)
+    '''
 
-    #contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours = sorted(contours, key=lambda x: cv2.contourArea(x))
 
     #contours = contours[0] if imutils.is_cv2() else contours[1]
     #contours = sorted(contours, key=lambda x: cv2.contourArea(x))
 
     # go thru every contour
+    #print("there are ", len(contours), "contours")
+    contours_approved = 0
     for i in range(len(contours)-1, -1, -1):
         contour = contours[i]
     
@@ -978,7 +990,7 @@ def cannyStuff():
         #    continue
 
         # cv2.approxPloyDP() function to approximate the shape
-        approx = cv2.approxPolyDP(contour, epsilonCoeff * cv2.arcLength(contour, True), True)
+        approx = cv2.approxPolyDP(contour, 0.5 * cv2.arcLength(contour, True), True)
             
         # method 2: finding center point of shape
         (x, y, w, h) = cv2.boundingRect(contour)
@@ -988,7 +1000,8 @@ def cannyStuff():
         widthRatio = w/ogframe.shape[1]
         heightRatio = h/ogframe.shape[0]
 
-        if abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2 > canny["errorFromCenterX"]: #or abs(mask.shape[0]/2 - center_y) / mask.shape[0]/2 > canny["errorFromCenterY"]
+        if abs(ogframe.shape[1]/2 - center_x) / ogframe.shape[1]/2 > canny["errorFromCenterX"] \
+            or abs(ogframe.shape[0]/2 - center_y) / ogframe.shape[0]/2 > canny["errorFromCenterY"]:
             # CAN GIVE ERRORS HERE:print("Needs to be near the center")
             continue
         #print(widthRatio, heightRatio)
@@ -998,15 +1011,22 @@ def cannyStuff():
             or heightRatio > canny["maxSizeRatio"]: # DEBUGGING CODE: this is saying if the detected shape is larger than 30% of the entire frame in width then it's probably legit
             # CAN GIVE ERRORS HERE:print("Outside size limitations")
             continue
-
+        
+        contours_approved += 1
+        print("size", widthRatio, heightRatio)
+        print("center", 100*abs(ogframe.shape[1]/2 - center_x) / ogframe.shape[1]/2, 100*abs(ogframe.shape[0]/2 - center_y) / ogframe.shape[0]/2)
+        if contours_approved == 2:
+            cv2.drawContours(ogframe, [contour], -1, (0, 255, 0), 2)
+        else:
+            cv2.drawContours(ogframe, [contour], -1, (0, 0, 255), 2)
+        '''
         #print("Approx", len(approx))
-        if len(approx) <= 1 or len(approx) > 30:
-            continue
-
+        #if len(approx) <= 1 or len(approx) > 30:
+        #    continue
         surface = cv2.contourArea(contour)
 
         surface_percentage = surface/(w*h)
-        cv2.drawContours(ogframe, [contour], 0, (255, 255, 255), 2)
+        cv2.drawContours(threshold, [contour], 0, (255, 255, 255), 2)
             
         #print(surface*100/(w*h))
         if surface_percentage < 0.35:# CAN GIVE ERRORS HERE: if it's less than 0.35 then might ignore real ones if their color detection is too poor
@@ -1031,32 +1051,8 @@ def cannyStuff():
             else:
                 votes["Rectangles"] += 1
                 return
-
-        
-        #if len(approx) <= 3:
-        #    #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #    votes["Triangles"] += 1
-        #    return
-        #elif len(approx) <= 5: # i've found rectangles to sometimes hit 6 as amaximum but circles seem to always be more idk
-        #    # check if it's actually a triangle or not
-        ##    if surface < w*h*0.65:
-        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #        votes["Triangles"] += 1
-        #        return
-        #    
-        #    (_, _, w, h) = cv2.boundingRect(approx)
-        #    if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
-        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #        votes["Squares"] += 1
-        #        return
-        #    else:
-        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #        votes["Rectangles"] += 1
-        #        return
-        #elif len(approx) > 4:
-        #    #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        ##    votes["Circles"] += 1
-        #    return
+        '''
+    print("contours_approved", contours_approved)
             
 
 
@@ -1480,11 +1476,7 @@ def detecting_shape():
         count += 1
         print("Fps", count)
         '''
-        detectedAColorMate = colorStuff()
-
-        # if color stuff did detect a color with a considerable appearance of a blob then move onto doing canny
-        if detectedAColorMate:
-            cannyStuff()
+        cannyStuff()
 
 # Cargo Pass: Vars
 cargo_pos_save_period = 10
@@ -1560,10 +1552,12 @@ def autoThread():
                     #thresholdBGR = cv2.cvtColor(threshold, cv2.COLOR_GRAY2BGR)
                     #dilatedBGR = cv2.cvtColor(dilated, cv2.COLOR_GRAY2BGR)
                     #contourMaskBGR = cv2.cvtColor(contourMask, cv2.COLOR_GRAY2BGR)
-                    maskBGR = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+                    #maskBGR = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
                     #dstBGR = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-                    numpy_horizontal = np.hstack((ogframe, maskBGR)) #thresholdBGR, contourCroppedOGFrame, contourCroppedFrame, edgesBGR, dst, ogframe
-                    cv2.imshow('output', numpy_horizontal)
+                    #if type(edges) != None and type(threshold) != None and type(dst) != None:
+                    #    numpy_horizontal = np.hstack((threshold, dilated)) #thresholdBGR, contourCroppedOGFrame, contourCroppedFrame, edgesBGR, dst, ogframe
+                    #    cv2.imshow('output2', numpy_horizontal)
+                    cv2.imshow('output', ogframe)
                 except:
                     pass
 
