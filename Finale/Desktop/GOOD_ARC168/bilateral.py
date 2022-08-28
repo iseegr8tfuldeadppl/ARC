@@ -5,7 +5,7 @@ video = cv2.VideoCapture(0)
 
 minCanny = 25
 maxCanny = 35
-one, two, three, four = [80, 80, 1, 0]
+sigmaColor, sigmaSpace, pixel_neighborhood_diameter = [80, 80, 1]
 dilation = 5
 def minCannyChanged(x):
     global minCanny
@@ -21,18 +21,15 @@ def dilationChanged(x):
     else:
         dilation = x
 
-def oneChanged(x):
-    global one
-    one = x
-def twoChanged(x):
-    global two
-    two = x
-def threeChanged(x):
-    global three
-    three = x
-def fourChanged(x):
-    global four
-    four = x
+def sigmaColorChanged(x):
+    global sigmaColor
+    sigmaColor = x
+def sigmaSpaceChanged(x):
+    global sigmaSpace
+    sigmaSpace = x
+def pixel_neighborhood_diameterChanged(x):
+    global pixel_neighborhood_diameter
+    pixel_neighborhood_diameter = x
 
 cv2.namedWindow("cannySliders")
 cv2.createTrackbar('minCanny', 'cannySliders', 0, 255, minCannyChanged)
@@ -44,22 +41,17 @@ cv2.createTrackbar('dilation','cannySliders', 0, 25, dilationChanged)
 cv2.setTrackbarPos('dilation','cannySliders', dilation)
 
 
-cv2.createTrackbar('one', 'cannySliders', 0, 200, oneChanged)
-cv2.createTrackbar('two', 'cannySliders', 0, 200, twoChanged)
-cv2.createTrackbar('three', 'cannySliders', 0, 30, threeChanged)
-cv2.createTrackbar('four', 'cannySliders', 0, 200, fourChanged)
-cv2.setTrackbarPos('one','cannySliders', one)
-cv2.setTrackbarPos('two','cannySliders', two)
-cv2.setTrackbarPos('three','cannySliders', three)
-cv2.setTrackbarPos('four','cannySliders', four)
+cv2.createTrackbar('sigmaColor', 'cannySliders', 0, 200, sigmaColorChanged)
+cv2.createTrackbar('sigmaSpace', 'cannySliders', 0, 200, sigmaSpaceChanged)
+cv2.createTrackbar('pixel_neighborhood_diameter', 'cannySliders', 0, 30, pixel_neighborhood_diameterChanged)
+cv2.setTrackbarPos('sigmaColor','cannySliders', sigmaColor)
+cv2.setTrackbarPos('sigmaSpace','cannySliders', sigmaSpace)
+cv2.setTrackbarPos('pixel_neighborhood_diameter','cannySliders', pixel_neighborhood_diameter)
 
 while True:
     ret, ogframe = video.read()
     
-    #kernel = np.ones((9, 9), np.uint8) #(9, 9), (15, 15), (31, 31 does not improve much upon the (15, 15))
-    #morphed = cv2.morphologyEx(ogframe, cv2.MORPH_OPEN, kernel, iterations=1)
-
-    bilateral_blur = cv2.bilateralFilter(ogframe,three,one,two) # 15 # https://www.geeksforgeeks.org/python-bilateral-filtering/
+    bilateral_blur = cv2.bilateralFilter(ogframe, pixel_neighborhood_diameter, sigmaColor, sigmaSpace) # 15 # https://www.geeksforgeeks.org/python-bilateral-filtering/
 
     edges = cv2.Canny(bilateral_blur, minCanny, maxCanny)
 
@@ -67,15 +59,14 @@ while True:
     dilated = cv2.dilate(edges, kernel)
 
     contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    #contours = sorted(contours, key=lambda x: cv2.contourArea(x))
     
     empty = np.zeros((ogframe.shape[0], ogframe.shape[1]), np.uint8)
 
     for i in range(len(contours)-1, -1, -1):
         
         (x, y, w, h) = cv2.boundingRect(contours[i])
-        center_x = int(x + w/2) / ogframe.shape[1]
-        center_y = abs(int(y - h/2)) / ogframe.shape[0]
+        center_x = int(x + w/2)
+        center_y = abs(int(y - h/2))
 
         widthRatio = w/ogframe.shape[1]
         heightRatio = h/ogframe.shape[0]

@@ -64,19 +64,23 @@ hsvs = { # https://stackoverflow.com/questions/10948589/choosing-the-correct-upp
     }
 }
 canny = {
-    "minSizeRatio": 0.06,
-    "maxSizeRatio": 0.75,
+    "minSizeRatio": 0.1,
+    "maxSizeRatio": 1.,
     "rectangle_width_to_height_ratio": 0.3,
     "countours_to_display": 7,
     "minGrayThresh": 127, #195
     "maxGrayThresh": 255, #255
-    "minCannyThresh": 34, # 13
-    "maxCannyThresh": 40, # 13
+    "minCannyThresh": 25, # 13
+    "maxCannyThresh": 35, # 13
     "gaussianBlurKernelSize": 5,
     "errorFromCenterX": 0.3,
-    "errorFromCenterY": 0.3
-}
+    "errorFromCenterY": 0.3,
 
+    "dilation": 5,
+    "sigmaColor": 80,
+    "sigmaSpace": 80,
+    "pixel_neighborhood_diameter": 1
+}
 
 # Canny & HSV: Functions
 types_of_shapes = 4
@@ -488,9 +492,9 @@ log.setLevel(logging.ERROR)
 def index():
     return "Bozo"
 
-mode = "Vision" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
+mode = "Arm" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
 print("Initial mode is", mode, "btw")
-receivedAnglesBoolean = False
+receivedAnglesBoolean = False 
 @app.route('/motion', methods=["GET", "POST"])
 def motion_feed():
     global mode
@@ -716,11 +720,11 @@ def checkPixel(event, x, y, flags, param):
     global checkpixel_left_button_down
     if event==cv2.EVENT_MOUSEMOVE:
         if checkpixel_left_button_down:
-            if type(ogframeHSV) != None:
+            if ogframeHSV is not None:
                 print("HSV VALUES HERE", ogframeHSV[y][x])
     elif event==cv2.EVENT_LBUTTONDOWN:
         checkpixel_left_button_down = True
-        if type(ogframeHSV) != None:
+        if ogframeHSV is not None:
             print("HSV VALUES HERE", ogframeHSV[y][x])
     elif event==cv2.EVENT_LBUTTONUP:
         checkpixel_left_button_down = False
@@ -778,6 +782,22 @@ def maxCannyChanged(x):
 def gaussianBlurKernelSizeChanged(x):
     global canny
     canny["gaussianBlurKernelSize"] = x
+    notifySave()
+def edgeDilationChanged(x):
+    global canny
+    canny["dilation"] = x
+    notifySave()
+def edgesigmaColorChanged(x):
+    global canny
+    canny["sigmaColor"] = x
+    notifySave()
+def edgeSigmaSpaceChanged(x):
+    global canny
+    canny["sigmaSpace"] = x
+    notifySave()
+def edgeDChanged(x):
+    global canny
+    canny["pixel_neighborhood_diameter"] = x
     notifySave()
 
 # Cargo: Functions
@@ -954,44 +974,25 @@ def switchViewedCargoPosition(event, x, y, flags, param):
 
 # Canny Work
 contours = []
-def cannyStuff():
+def colorCannyStuff():
     global contours
     global ogframe
-    global threshold, dst, edges, dilated # debugging
+    global threshold, dst # debugging
     global votes # for decisions
-    gray = cv2.cvtColor(ogframe, cv2.COLOR_BGR2GRAY)
-    dst = cv2.GaussianBlur(gray, (5, 5), cv2.BORDER_DEFAULT)
+    #dst = cv2.GaussianBlur(mask, (9, 9), cv2.BORDER_DEFAULT)
+    #edges = cv2.Canny(mask, canny["minCannyThresh"], canny["maxCannyThresh"])
+    #_, threshold = cv2.threshold(edges, canny["minGrayThresh"], canny["maxGrayThresh"], cv2.THRESH_BINARY)
+    #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
+    #dilated = cv2.dilate(edges, kernel)
 
-    '''
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
-    dilated2 = cv2.dilate(dst, kernel)
-    edges = cv2.Canny(dilated2, canny["minCannyThresh"], canny["maxCannyThresh"])
-    _, threshold = cv2.threshold(edges, canny["minGrayThresh"], canny["maxGrayThresh"], cv2.THRESH_BINARY)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
-    dilated = cv2.dilate(threshold, kernel)
-    '''
-
-    edges = cv2.Canny(gray, canny["minCannyThresh"], canny["maxCannyThresh"])
-    lines = cv2.HoughLinesP(edges, rho=1., theta=np.pi/180.,
-                            threshold=80, minLineLength=30, maxLineGap=10.)
-    for this_line in lines:
-        cv2.line(ogframe,
-                (this_line[0][0], this_line[0][1]),
-                (this_line[0][2], this_line[0][3]),
-                [0, 0, 255], 3, 8)
-
-    contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contours = sorted(contours, key=lambda x: cv2.contourArea(x))
+    #contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     #contours = contours[0] if imutils.is_cv2() else contours[1]
     #contours = sorted(contours, key=lambda x: cv2.contourArea(x))
 
     # go thru every contour
-    #print("there are ", len(contours), "contours")
-    contours_approved = 0
     for i in range(len(contours)-1, -1, -1):
         contour = contours[i]
-        '''
     
         # here we are ignoring first counter because 
         # findcontour function detects whole image as shape
@@ -1000,18 +1001,17 @@ def cannyStuff():
         #    continue
 
         # cv2.approxPloyDP() function to approximate the shape
-        approx = cv2.approxPolyDP(contour, 0.5 * cv2.arcLength(contour, True), True)
+        approx = cv2.approxPolyDP(contour, epsilonCoeff * cv2.arcLength(contour, True), True)
             
         # method 2: finding center point of shape
         (x, y, w, h) = cv2.boundingRect(contour)
         center_x = int(x + w/2)
-        center_y = int(y - h/2)
+        center_y = int(y + h/2)
 
         widthRatio = w/ogframe.shape[1]
         heightRatio = h/ogframe.shape[0]
 
-        if abs(ogframe.shape[1]/2 - center_x) / ogframe.shape[1]/2 > canny["errorFromCenterX"] \
-            or abs(ogframe.shape[0]/2 - center_y) / ogframe.shape[0]/2 > canny["errorFromCenterY"]:
+        if abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2 > canny["errorFromCenterX"]: #or abs(mask.shape[0]/2 - center_y) / mask.shape[0]/2 > canny["errorFromCenterY"]
             # CAN GIVE ERRORS HERE:print("Needs to be near the center")
             continue
         #print(widthRatio, heightRatio)
@@ -1021,23 +1021,15 @@ def cannyStuff():
             or heightRatio > canny["maxSizeRatio"]: # DEBUGGING CODE: this is saying if the detected shape is larger than 30% of the entire frame in width then it's probably legit
             # CAN GIVE ERRORS HERE:print("Outside size limitations")
             continue
-        
-        contours_approved += 1
-        print("size", widthRatio, heightRatio)
-        print("center", 100*abs(ogframe.shape[1]/2 - center_x) / ogframe.shape[1]/2, 100*abs(ogframe.shape[0]/2 - center_y) / ogframe.shape[0]/2)
-        if contours_approved == 2:
-            cv2.drawContours(ogframe, [contour], -1, (0, 255, 0), 2)
-        else:
-            cv2.drawContours(ogframe, [contour], -1, (0, 0, 255), 2)
-        '''
-        '''
+
         #print("Approx", len(approx))
-        #if len(approx) <= 1 or len(approx) > 30:
-        #    continue
+        if len(approx) <= 1 or len(approx) > 30:
+            continue
+
         surface = cv2.contourArea(contour)
 
         surface_percentage = surface/(w*h)
-        cv2.drawContours(threshold, [contour], 0, (255, 255, 255), 2)
+        cv2.drawContours(ogframe, [contour], 0, (255, 255, 255), 2)
             
         #print(surface*100/(w*h))
         if surface_percentage < 0.35:# CAN GIVE ERRORS HERE: if it's less than 0.35 then might ignore real ones if their color detection is too poor
@@ -1050,7 +1042,7 @@ def cannyStuff():
             votes["Circles"] += 1
             return
 
-        if surface < w*h*0.65:
+        if surface_percentage < 0.65:
             votes["Triangles"] += 1
             return
         elif len(approx)==4 or surface_percentage >= 0.87:
@@ -1062,8 +1054,32 @@ def cannyStuff():
             else:
                 votes["Rectangles"] += 1
                 return
-        '''
-    #print("contours_approved", contours_approved)
+
+        
+        #if len(approx) <= 3:
+        #    #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
+        #    votes["Triangles"] += 1
+        #    return
+        #elif len(approx) <= 5: # i've found rectangles to sometimes hit 6 as amaximum but circles seem to always be more idk
+        #    # check if it's actually a triangle or not
+        ##    if surface < w*h*0.65:
+        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
+        #        votes["Triangles"] += 1
+        #        return
+        #    
+        #    (_, _, w, h) = cv2.boundingRect(approx)
+        #    if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
+        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
+        #        votes["Squares"] += 1
+        #        return
+        #    else:
+        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
+        #        votes["Rectangles"] += 1
+        #        return
+        #elif len(approx) > 4:
+        #    #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
+        ##    votes["Circles"] += 1
+        #    return
             
 
 
@@ -1099,7 +1115,7 @@ def colorStuff():
             x = int(x + w/2)
             y = int(y + h/2)
             center_x = int(x + w/2)
-            center_y = int(y - h/2)
+            center_y = int(y + h/2)
 
             colorContourWidthRatio = w/ogframe.shape[1]
             colorContourHeightRatio = h/ogframe.shape[0]    
@@ -1153,6 +1169,11 @@ def VisionInits():
     cv2.createTrackbar('Error X', 'cannySliders', 0, 100, errorFromCenterXChanged)
     cv2.createTrackbar('Error Y', 'cannySliders', 0, 100, errorFromCenterYChanged)
 
+    cv2.createTrackbar('Dilation', 'cannySliders', 0, 25, edgeDilationChanged)
+    cv2.createTrackbar('Sigma Color', 'cannySliders', 0, 200, edgesigmaColorChanged)
+    cv2.createTrackbar('Sigma Space', 'cannySliders', 0, 200, edgeSigmaSpaceChanged)
+    cv2.createTrackbar('d', 'cannySliders', 0, 30, edgeDChanged)
+
 # Cargo: Inits
 def cargoArmInits():
     # Arm: Inits
@@ -1182,6 +1203,11 @@ def updateCanny():
     cv2.setTrackbarPos('max size','cannySliders', int(canny["maxSizeRatio"]*100))
     cv2.setTrackbarPos('Error X','cannySliders', int(canny["errorFromCenterX"]*100))
     cv2.setTrackbarPos('Error Y','cannySliders', int(canny["errorFromCenterY"]*100))
+    
+    cv2.setTrackbarPos('Dilation','cannySliders', canny["dilation"])
+    cv2.setTrackbarPos('Sigma Color','cannySliders', canny["sigmaColor"])
+    cv2.setTrackbarPos('Sigma Space','cannySliders', canny["sigmaSpace"])
+    cv2.setTrackbarPos('d','cannySliders', canny["pixel_neighborhood_diameter"])
 
 # Vision: Functions
 def hideWindows():
@@ -1487,7 +1513,96 @@ def detecting_shape():
         count += 1
         print("Fps", count)
         '''
-        cannyStuff()
+        detectedAColorMate = colorStuff()
+
+        # if color stuff did detect a color with a considerable appearance of a blob then move onto doing canny
+        if detectedAColorMate:
+            colorCannyStuff()
+
+# edge detection
+def edgeCannyStuff():
+    global votes, ogframe
+    bilateral_blur = cv2.bilateralFilter(ogframe, canny["pixel_neighborhood_diameter"], canny["sigmaColor"], canny["sigmaSpace"]) # 15 # https://www.geeksforgeeks.org/python-bilateral-filtering/
+
+    edges = cv2.Canny(bilateral_blur, canny["minCannyThresh"], canny["maxCannyThresh"])
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(canny["dilation"], canny["dilation"])) #9, 9
+    dilated = cv2.dilate(edges, kernel)
+
+    contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    
+    empty = np.zeros((ogframe.shape[0], ogframe.shape[1]), np.uint8)
+
+    for i in range(len(contours)-1, -1, -1):
+        
+        (x, y, w, h) = cv2.boundingRect(contours[i])
+        center_x = int(x + w/2)
+        center_y = int(y + h/2)
+
+        widthRatio = w/ogframe.shape[1]
+        heightRatio = h/ogframe.shape[0]
+
+        # if it's large enough
+        if widthRatio >= 0.1 and heightRatio >= 0.1:
+            
+            # if it's off of center constraints
+            x_center_of_img, y_center_of_img = (ogframe.shape[1]/2, ogframe.shape[0]/2) # x, y
+            if abs(x_center_of_img - center_x) / x_center_of_img > canny["errorFromCenterX"] or \
+                abs(y_center_of_img - center_y) / y_center_of_img > canny["errorFromCenterY"]:
+                continue
+
+            surface = cv2.contourArea(contours[i])
+            surface_percentage = surface/(w*h)
+
+            # if its surface is too small
+            if surface_percentage < 0.3:
+                continue
+
+            # debugging
+            print("C", (round(abs(x_center_of_img - center_x) / x_center_of_img, 2), round(abs(y_center_of_img - center_y) / y_center_of_img, 2)), \
+                    "R", (round(widthRatio, 2), round(heightRatio, 2)), \
+                    "%", round(surface_percentage, 2))
+
+            cv2.drawContours(ogframe, [contours[i]], -1, (255, 255, 255), -1) #-1
+            cv2.circle(ogframe, (center_x, center_y), 1, (0, 255, 0), 3)
+            # IMPORTANT-TOOL: maximum center constraints
+            ogframe = cv2.rectangle(ogframe, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), (0, 255, 0), 1)
+
+            # shape classification method
+            if surface_percentage >= 0.65 and surface_percentage < 0.84: # and not len(approx)==4
+                #votes["Circles"] += 1
+                break
+
+            if surface_percentage < 0.65: 
+                votes["Triangles"] += 1
+                break
+            elif surface_percentage >= 0.87: #len(approx)==4 or 
+                #print("width to height ratio", abs( 1 - float(w)/h ))
+                canny["rectangle_width_to_height_ratio"] = 0.3 # CAN GIVE ERRORS HERE: i'm hardcoding this
+                if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
+                    votes["Squares"] += 1
+                    break
+                else:
+                    #votes["Rectangles"] += 1
+                    break
+                break
+
+
+
+def edge_detecting_shape():
+    #global count, start_of_second # DEBUGGING: counting fps
+    global cap, ogframe
+    ret, ogframe = cap.read()
+    #ogframetest = cv2.imread("imBGR.png")
+    if ret:
+        ''' # fps counter 
+        if time.time() - start_of_second > 1:
+            count = 0
+            start_of_second = time.time()
+        count += 1
+        print("Fps", count)
+        '''
+        edgeCannyStuff()
 
 # Cargo Pass: Vars
 cargo_pos_save_period = 10
@@ -1530,7 +1645,8 @@ def autoThread():
             resetLineFollower()
             carControlOn = False
             cargo_pass_done = False
-            detecting_shape()
+            #detecting_shape()
+            edge_detecting_shape()
             if time.time() - votes["Start Of Vote"] > votes["Max Vote Period"]:
                 detectedShape, detectedColor = resolveVotes()
                 print("detections", detectedShape, detectedColor)
@@ -1565,7 +1681,7 @@ def autoThread():
                     #contourMaskBGR = cv2.cvtColor(contourMask, cv2.COLOR_GRAY2BGR)
                     #maskBGR = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
                     #dstBGR = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-                    #if type(edges) != None and type(threshold) != None and type(dst) != None:
+                    #if edges is not None and threshold is not None and dst is not None:
                     #    numpy_horizontal = np.hstack((threshold, dilated)) #thresholdBGR, contourCroppedOGFrame, contourCroppedFrame, edgesBGR, dst, ogframe
                     #    cv2.imshow('output2', numpy_horizontal)
                     cv2.imshow('output', ogframe)
@@ -1720,71 +1836,6 @@ def autoThread():
             visionPermissionRequested = False
         '''
 
-def debugThread():
-    global carControlOn, cargo_pass_done
-    while True:
-        # save to pickle file
-        if not saved:
-            if time.time() - last_slider_update >= update_delay:
-                saved = True
-                last_slider_update = time.time()
-                saveVars()
-
-        if mode == "Vision":
-            carControlOn = False
-            cargo_pass_done = False
-            hideArmWindows()
-            showWindows()
-
-            detecting_shape()
-
-            # DEBUGGING:
-            #cv2.imshow("sliders", buttons)
-            #cv2.imshow("cannySliders", emptyCannyImage)
-            #numpy_horizontal = np.hstack((ogframe, edges))
-            cv2.imshow('output', ogframe)
-
-            if cv2.waitKey(1) == ord('q'):
-                break
-
-        elif mode == "Arm":
-            carControlOn = False
-            cargo_pass_done = False
-            hideWindows()
-            showArmWindows()
-
-            robotArm()
-
-            if cv2.waitKey(1) == ord('q'):
-                break
-
-        elif mode == "Line Follower":
-            carControlOn = False
-            cargo_pass_done = False
-            hideWindows()
-            hideArmWindows()
-            lineFollower()
-
-        elif mode == "Car Control":
-            carControlOn = False
-            cargo_pass_done = False
-            hideWindows()
-            hideArmWindows()
-            carControl()
-
-        elif mode == "Unselected":
-            carControlOn = False
-            cargo_pass_done = False
-            hideWindows()
-            hideArmWindows()
-
-        elif mode == "Cargo Pass":
-            carControlOn = False
-            cargo_pass_done = False
-            hideWindows()
-            hideArmWindows()
-            print("Cargo Pass")
-
 # Saving/Loading Work
 try:
     loadVars()
@@ -1798,8 +1849,6 @@ except Exception as e:
 for colorName, _ in hsvs.items():
     selectedColor = colorName
     break
-
-
 
 # Server: start server
 thread = Thread(target=server)
