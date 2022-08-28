@@ -961,7 +961,7 @@ def cannyStuff():
     global votes # for decisions
     gray = cv2.cvtColor(ogframe, cv2.COLOR_BGR2GRAY)
     dst = cv2.GaussianBlur(gray, (5, 5), cv2.BORDER_DEFAULT)
-    
+
     '''
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
     dilated2 = cv2.dilate(dst, kernel)
@@ -970,6 +970,15 @@ def cannyStuff():
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
     dilated = cv2.dilate(threshold, kernel)
     '''
+
+    edges = cv2.Canny(gray, canny["minCannyThresh"], canny["maxCannyThresh"])
+    lines = cv2.HoughLinesP(edges, rho=1., theta=np.pi/180.,
+                            threshold=80, minLineLength=30, maxLineGap=10.)
+    for this_line in lines:
+        cv2.line(ogframe,
+                (this_line[0][0], this_line[0][1]),
+                (this_line[0][2], this_line[0][3]),
+                [0, 0, 255], 3, 8)
 
     contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours = sorted(contours, key=lambda x: cv2.contourArea(x))
@@ -982,6 +991,7 @@ def cannyStuff():
     contours_approved = 0
     for i in range(len(contours)-1, -1, -1):
         contour = contours[i]
+        '''
     
         # here we are ignoring first counter because 
         # findcontour function detects whole image as shape
@@ -1020,6 +1030,7 @@ def cannyStuff():
         else:
             cv2.drawContours(ogframe, [contour], -1, (0, 0, 255), 2)
         '''
+        '''
         #print("Approx", len(approx))
         #if len(approx) <= 1 or len(approx) > 30:
         #    continue
@@ -1052,7 +1063,7 @@ def cannyStuff():
                 votes["Rectangles"] += 1
                 return
         '''
-    print("contours_approved", contours_approved)
+    #print("contours_approved", contours_approved)
             
 
 
