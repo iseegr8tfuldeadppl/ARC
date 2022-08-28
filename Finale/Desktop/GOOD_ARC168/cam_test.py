@@ -3,6 +3,21 @@ import numpy as np
 
 video = cv2.VideoCapture(0)
 
+minCanny = 6
+maxCanny = 13
+def minCannyChanged(x):
+    global minCanny
+    minCanny = x
+def maxCannyChanged(x):
+    global maxCanny
+    maxCanny = x
+
+cv2.namedWindow("cannySliders")
+cv2.createTrackbar('minCanny', 'cannySliders', 0, 255, minCannyChanged)
+cv2.createTrackbar('maxCanny', 'cannySliders', 0, 255, maxCannyChanged)
+cv2.setTrackbarPos('minCanny','cannySliders', minCanny)
+cv2.setTrackbarPos('maxCanny','cannySliders', maxCanny)
+
 while True:
     ret, ogframe = video.read()
     gray = cv2.cvtColor(ogframe, cv2.COLOR_BGR2GRAY)
