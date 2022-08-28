@@ -136,7 +136,7 @@ def readSensors():
     # 6000 between right and middle sensors
     # 7500 right sensor
     # 9000 out of line right
-    position = 9000
+    position = 0
 
     sensor1_val = GPIO.input(sensor1)
     sensor2_val = GPIO.input(sensor2)
@@ -156,7 +156,7 @@ def readSensors():
             position = 9000 # 9000 out of line right
 
     elif sensor1_val and sensor2_val and sensor3_val: # off the ground
-        position = 4500 # 4500 center
+        position = 0 # 4500 center
         forth_sensed = False
         last_sensor = "first_time"
 
