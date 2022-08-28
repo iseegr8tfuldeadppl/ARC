@@ -86,6 +86,7 @@ while True:
             surface_percentage = surface/(w*h)
 
             if surface_percentage > 0.1:
+                print("Found this")
                 print("center", center_x, center_y)
                 print("size ratios", widthRatio, heightRatio)
                 print("surface percentage", surface_percentage)
@@ -95,7 +96,8 @@ while True:
 
     cv2.imshow('edges', edges)
     cv2.imshow('dilated', dilated)
-    cv2.imshow('bilateral_blur', bilateral_blur)
-    cv2.imshow('empty', empty)
+    #cv2.imshow('bilateral_blur', bilateral_blur)
+    #cv2.imshow('empty', empty)
+    #cv2.imshow('ogframe', ogframe)
     if cv2.waitKey(1) == ord('q'):
         break
