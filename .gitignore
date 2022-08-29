@@ -1,4 +1,6 @@
-
+*.stl
+*.gcode
+*.blend
+*.blend1
 *.pyc
-*.pyc
-*.pyc
+*.3ml
