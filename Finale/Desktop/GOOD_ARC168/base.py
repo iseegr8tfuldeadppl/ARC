@@ -156,7 +156,7 @@ def readSensors():
             position = 9000 # 9000 out of line right
 
     elif sensor1_val and sensor2_val and sensor3_val: # off the ground
-        position = 0 # 4500 center
+        position = 0 # absolute left
         forth_sensed = False
         last_sensor = "first_time"
 

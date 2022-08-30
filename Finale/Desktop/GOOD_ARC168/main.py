@@ -98,7 +98,7 @@ def resetVotes():
         "Yellow": 0,
         "Orange": 0,
         "Start Of Vote": time.time(),
-        "Max Vote Period": 8 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
+        "Max Vote Period": 5 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
     }
 
 def resolveVotes():
@@ -538,19 +538,14 @@ def mode_feed():
             }
 
         #if autoStartMode:
-        if tempMode == "Arm":
-            #allowToPickUp = False
-            pickupRequest = True
-            if shapes < 0:
-                shapes = ogShapes
-        if tempMode == "Vision": # so if we send it back to shapes just detect one more shape before wanting to move
-            if shapes < 0:
-                shapes = ogShapes
-                detectedColor = "Unknown"
-                detectedShape = "Unknown"
+        #if tempMode == "Arm":
+        #    #allowToPickUp = False
+        #if tempMode == "Vision": # so if we send it back to shapes just detect one more shape before wanting to move
+        #    if shapes < 0:
+        #        shapes = ogShapes
 
-        mode = request.form.get("mode")
-        print("Received a mode update:", mode)
+        mode = tempMode
+        print("Received a mode update:", tempMode)
         return "Thanks, bozo"
     return "Unknown command bozo"
 
@@ -589,6 +584,10 @@ def startAuto_feed():
             mode = "Unselected"
         return "Thanks, bozo"
     return "Unknown command bozo"
+
+@app.route('/', methods=["GET", "POST"])
+def ping_feed():
+    return "cool"
 
 # Server: start server function
 def server():
@@ -1150,26 +1149,28 @@ def VisionInits():
     '''
 
     # Canny: Inits
-    cv2.namedWindow("cannySliders") #, cv2.WINDOW_AUTOSIZE
-    emptyCannyImage = np.zeros((1, 300, 3), np.uint8)
-    cv2.imshow("cannySliders", emptyCannyImage)
-    cv2.createTrackbar('min Canny', 'cannySliders', 0, 255, minCannyChanged)
-    cv2.createTrackbar('max Canny', 'cannySliders', 0, 255, maxCannyChanged)
-    cv2.createTrackbar('min size', 'cannySliders', 0, 100, minSizeChanged)
-    cv2.createTrackbar('max size', 'cannySliders', 0, 100, maxSizeChanged)
-    cv2.createTrackbar('Gaussian blur', 'cannySliders', 0, 15, gaussianBlurKernelSizeChanged)
-    cv2.createTrackbar('Error X', 'cannySliders', 0, 100, errorFromCenterXChanged)
-    cv2.createTrackbar('Error Y', 'cannySliders', 0, 100, errorFromCenterYChanged)
-
-    cv2.createTrackbar('Dilation', 'cannySliders', 0, 25, edgeDilationChanged)
-    cv2.createTrackbar('Sigma Color', 'cannySliders', 0, 200, edgesigmaColorChanged)
-    cv2.createTrackbar('Sigma Space', 'cannySliders', 0, 200, edgeSigmaSpaceChanged)
-    cv2.createTrackbar('d', 'cannySliders', 0, 30, edgeDChanged)
+    try:
+        cv2.namedWindow("cannySliders") #, cv2.WINDOW_AUTOSIZE
+        emptyCannyImage = np.zeros((1, 300, 3), np.uint8)
+        cv2.imshow("cannySliders", emptyCannyImage)
+        cv2.createTrackbar("minCanny", "cannySliders", 0, 255, minCannyChanged)
+        cv2.createTrackbar("maxCanny", "cannySliders", 0, 255, maxCannyChanged)
+        cv2.createTrackbar("minsize", "cannySliders", 0, 100, minSizeChanged)
+        cv2.createTrackbar("maxsize", "cannySliders", 0, 100, maxSizeChanged)
+        cv2.createTrackbar("Gaussianblur", "cannySliders", 0, 15, gaussianBlurKernelSizeChanged)
+        cv2.createTrackbar("ErrorX", "cannySliders", 0, 100, errorFromCenterXChanged)
+        cv2.createTrackbar("ErrorY", "cannySliders", 0, 100, errorFromCenterYChanged)
+        cv2.createTrackbar("Dilation", "cannySliders", 0, 25, edgeDilationChanged)
+        cv2.createTrackbar("SigmaColor", "cannySliders", 0, 200, edgesigmaColorChanged)
+        cv2.createTrackbar("SigmaSpace", "cannySliders", 0, 200, edgeSigmaSpaceChanged)
+        cv2.createTrackbar("d", "cannySliders", 0, 30, edgeDChanged)
+    except Exception as e:
+        print("lol")
+        print(e)
 
 # Cargo: Inits
 def cargoArmInits():
     # Arm: Inits
-    print("here")
     cv2.namedWindow("cargoArmSliders")
     cv2.setMouseCallback("cargoArmSliders", switchViewedCargoPosition)
     cv2.createTrackbar('Mouth', 'cargoArmSliders', 0, 100, cargoMouthChanged)
@@ -1188,19 +1189,22 @@ def ArmInits():
     cv2.createTrackbar('Spine', 'armSliders', 0, 100, spineChanged)
 
 def updateCanny():
-    cv2.setTrackbarPos('min Canny','cannySliders', canny["minCannyThresh"])
-    cv2.setTrackbarPos('max Canny','cannySliders', canny["maxCannyThresh"])
-    cv2.setTrackbarPos('Gaussian blur','cannySliders', canny["gaussianBlurKernelSize"])
-    cv2.setTrackbarPos('min size','cannySliders', int(canny["minSizeRatio"]*100))
-    cv2.setTrackbarPos('max size','cannySliders', int(canny["maxSizeRatio"]*100))
-    cv2.setTrackbarPos('Error X','cannySliders', int(canny["errorFromCenterX"]*100))
-    cv2.setTrackbarPos('Error Y','cannySliders', int(canny["errorFromCenterY"]*100))
-    
-    cv2.setTrackbarPos('Dilation','cannySliders', canny["dilation"])
-    cv2.setTrackbarPos('Sigma Color','cannySliders', canny["sigmaColor"])
-    cv2.setTrackbarPos('Sigma Space','cannySliders', canny["sigmaSpace"])
-    cv2.setTrackbarPos('d','cannySliders', canny["pixel_neighborhood_diameter"])
-    print("bro")
+    try:
+        cv2.setTrackbarPos('minCanny','cannySliders', canny["minCannyThresh"])
+        cv2.setTrackbarPos('maxCanny','cannySliders', canny["maxCannyThresh"])
+        cv2.setTrackbarPos('Gaussianblur','cannySliders', canny["gaussianBlurKernelSize"])
+        cv2.setTrackbarPos('minsize','cannySliders', int(canny["minSizeRatio"]*100))
+        cv2.setTrackbarPos('maxsize','cannySliders', int(canny["maxSizeRatio"]*100))
+        cv2.setTrackbarPos('ErrorX','cannySliders', int(canny["errorFromCenterX"]*100))
+        cv2.setTrackbarPos('ErrorY','cannySliders', int(canny["errorFromCenterY"]*100))
+        
+        cv2.setTrackbarPos('Dilation','cannySliders', canny["dilation"])
+        cv2.setTrackbarPos('SigmaColor','cannySliders', canny["sigmaColor"])
+        cv2.setTrackbarPos('SigmaSpace','cannySliders', canny["sigmaSpace"])
+        cv2.setTrackbarPos('d','cannySliders', canny["pixel_neighborhood_diameter"])
+    except Exception as e:
+        print(e)
+        print("lol")
 
 
 # Vision: Functions
@@ -1285,8 +1289,7 @@ def hideArmWindows():
     global arm_windows_shown
     if arm_windows_shown:
         arm_windows_shown = False
-        if mode != "Vision":
-            cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
 def showArmWindows():
     global arm_windows_shown
     if not arm_windows_shown:
@@ -1618,239 +1621,235 @@ def autoThread():
     global visionPermissionRequested, firstVisionPermissionRequested
     global votes # decision system
 
-    print("COMP DAY STUFF: APPROVE ALL REQUESTS")
-    # DISABLE ALL ALLOW PICKUPS HERE BY SETTING THE BOOLEANS DIRECTLY
-    if firstVisionPermissionRequested: #ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
-        allowToPickUp = True
-
     #mode = "Vision" # in auto mode, mode begins from vision
     print("AUTO: Vision mode") # always starts with vision
     visionPermissionRequested = False
-    firstVisionPermissionRequested = False
+    firstVisionPermissionRequested = True
     while True:
+        try:
+            #print("COMP DAY STUFF: APPROVE ALL REQUESTS")
+            # DISABLE ALL ALLOW PICKUPS HERE BY SETTING THE BOOLEANS DIRECTLY
+            if firstVisionPermissionRequested: #ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
+                allowToPickUp = True
+
+            #if not comp_day:
+            # save to pickle file
+            if not saved:
+                if time.time() - last_slider_update >= update_delay:
+                    saved = True
+                    print("saving", time.time())
+                    last_slider_update = time.time()
+                    saveVars()
+
+            if mode == "Vision":
+                if not comp_day:
+                    hideArmWindows()
+                    hideCargoArmWindows()
+                    showWindows()
         
-        #print("COMP DAY STUFF: APPROVE ALL REQUESTS")
-        # DISABLE ALL ALLOW PICKUPS HERE BY SETTING THE BOOLEANS DIRECTLY
-        if firstVisionPermissionRequested: #ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
-            allowToPickUp = True
+                resetLineFollower()
+                carControlOn = False
+                cargo_pass_done = False
+                #detecting_shape()
+                edge_detecting_shape()
+                if time.time() - votes["Start Of Vote"] > votes["Max Vote Period"]:
+                    detectedShape, detectedColor = resolveVotes()
+                    print("detections", detectedShape, detectedColor)
+                    votes = resetVotes()
 
-        #if not comp_day:
-        # save to pickle file
-        if not saved:
-            if time.time() - last_slider_update >= update_delay:
-                saved = True
-                print("saving", time.time())
-                last_slider_update = time.time()
-                saveVars()
+                    if not firstVisionPermissionRequested:
+                        if allowToPickUp:
+                            firstVisionPermissionRequested = True
+                        else:
+                            if not pickupRequest:
+                                print("Vision: (DEBUG: permission to start vision sent)")
+                                pickupRequest = True
 
-        if mode == "Vision":
-            if not comp_day:
-                hideArmWindows()
-                hideCargoArmWindows()
-                showWindows()
-    
-            print("bro2")
-            resetLineFollower()
-            print("bro3")
-            carControlOn = False
-            cargo_pass_done = False
-            #detecting_shape()
-            edge_detecting_shape()
-            if time.time() - votes["Start Of Vote"] > votes["Max Vote Period"]:
-                detectedShape, detectedColor = resolveVotes()
-                print("detections", detectedShape, detectedColor)
-                votes = resetVotes()
+                    if detectedShape == "Unknown":
+                        continue
 
-                if not firstVisionPermissionRequested:
-                    if allowToPickUp:
-                        firstVisionPermissionRequested = True
-                    else:
-                        if not pickupRequest:
-                            print("Vision: (DEBUG: permission to start vision sent)")
+                    if detectedShape == "Circles" or detectedShape == "Rectangles":
+                        continue
+
+                    if firstVisionPermissionRequested:
+                        if not visionPermissionRequested:
+                            print("Vision: (DEBUG: permission to move onto arm sent)")
+                            visionPermissionRequested = True
                             pickupRequest = True
 
-                if detectedShape == "Unknown":
-                    continue
+                        if allowToPickUp: # i requested 
+                            pickupRequest = True
+                            shapes = ogShapes
+                            mode = "Arm"
+                            print("AUTO: Arm mode (pickup request sent)")
 
-                if detectedShape == "Circles" or detectedShape == "Rectangles":
-                    continue
+                if not comp_day:
+                    # DEBUGGING:
+                    try:
+                        # IMPORTANT-TOOLS: show these commented frames so u can tune the image
+                        #cv2.imshow('edges', edges)
+                        #cv2.imshow('dilated', dilated)
+                        cv2.imshow('output', ogframe)
+                    except:
+                        pass
 
-                if firstVisionPermissionRequested:
-                    if not visionPermissionRequested:
-                        print("Vision: (DEBUG: permission to move onto arm sent)")
-                        visionPermissionRequested = True
-                        pickupRequest = True
-
-                    if allowToPickUp: # i requested 
-                        pickupRequest = True
-                        shapes = ogShapes
-                        mode = "Arm"
-                        print("AUTO: Arm mode (pickup request sent)")
-
-            if not comp_day:
-                # DEBUGGING:
-                try:
-                    # IMPORTANT-TOOLS: show these commented frames so u can tune the image
-                    #cv2.imshow('edges', edges)
-                    #cv2.imshow('dilated', dilated)
-                    cv2.imshow('output', ogframe)
-                except:
-                    pass
-
-                if cv2.waitKey(1) == ord('q'):
-                    break
-
-        elif mode == "Arm":
-            if not comp_day:
-                hideWindows()
-                hideCargoArmWindows()
-                showArmWindows()
-                
-            resetLineFollower()
-            checkArmUpdatedManually()
-            carControlOn = False
-            cargo_pass_done = False
-            visionPermissionRequested = False
-
-            if allowToPickUp: ## and shapes > 0
-                allowToPickUp = False
-                #shapes -= 1
-
-                #detectedColor = "Unknown"
-                #detectedShape = "Unknown"
-
-                # pickup loop
-                armPosition = 0
-                while robotArm(len(armPositions[detectedShape])):
-                    ret, ogframe = cap.read()
                     if cv2.waitKey(1) == ord('q'):
                         break
-                    pass
 
-                # then re-execute the first position of the arm so it can return to point of start
-                armPosition = 0
-                last_go_arm_execusion = 0
-                while robotArm(1):
-                    ret, ogframe = cap.read()
-                    if cv2.waitKey(1) == ord('q'):
-                        break
-                    pass
-                armPosition = 0 # then reset arm position
-                turnOffArm() # DEBUG: then turn arm off
-                print("Finished pickup")
+            elif mode == "Arm":
+                if not comp_day:
+                    hideWindows()
+                    hideCargoArmWindows()
+                    showArmWindows()
+                    
+                resetLineFollower()
+                checkArmUpdatedManually()
+                carControlOn = False
+                cargo_pass_done = False
+                visionPermissionRequested = False
 
-                mode = "Vision"
-                print("AUTO: Vision mode")
-                votes = resetVotes()
-                # after pickup, either send us back to vision or move on to next step
-                '''
-                if shapes <= 0:
-                    print("Ran outta shapes")
-                    mode = "Car Control"
-                    print("AUTO: Car Control mode")
-                else:
-                    mode = "Vision"
-                    print("AUTO: Vision mode")
-                '''
-
-            if not comp_day:
-                if cv2.waitKey(1) == ord('q'):
-                    break
-
-        elif mode == "Car Control":
-            if not comp_day:
-                hideWindows()
-                hideCargoArmWindows()
-                hideArmWindows()
-            carControl()
-            cargo_pass_done = False
-            visionPermissionRequested = False
-
-        elif mode == "Line Follower":
-            if not comp_day:
-                hideWindows()
-                hideArmWindows()
-            carControlOn = False
-            cargo_pass_done = False
-            visionPermissionRequested = False
-            lineFollower()
-
-        elif mode == "Cargo Pass":
-            if not comp_day:
-                hideWindows()
-                hideArmWindows()
-                #showCargoArmWindows()
-            #checkCargoArmUpdatedManually()
-            resetLineFollower()
-            carControlOn = False
-            visionPermissionRequested = False
-
-            if receivedAnglesBoolean:
-                receivedAnglesBoolean = False
-                changed = go_to_coordinates(mode, 0, MSFromPercent(current_manual_cargo_positions["mouth"], MOUTH_MIN, MOUTH_MAX), \
-                                    MSFromPercent(current_manual_cargo_positions["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
-                                    MSFromPercent(current_manual_cargo_positions["tilt"], TILT_MIN, TILT_MAX), \
-                                    MSFromPercent(current_manual_cargo_positions["spine"], SPINE_MIN, SPINE_MAX))
-                #if changed:
-                #    if time.time() - last_time_since_changed >= cargo_pos_save_period:
-                #        print("saving cargo pos")
-                #        last_time_since_changed = time.time()
-                #        saved = False
-
-            '''
-            if not cargo_pass_done:
-                if not pickupRequest:
-                    print("Cargo Pass: requesting permission to perform the maneuver")
-                    pickupRequest = True
-                if allowToPickUp:
+                if allowToPickUp: ## and shapes > 0
                     allowToPickUp = False
-                    cargo_pass_done = True
+                    #shapes -= 1
+
+                    #detectedColor = "Unknown"
+                    #detectedShape = "Unknown"
+
                     # pickup loop
-                    cargoArmPosition = 0
-                    last_go_cargo_arm_execusion = 0
-                    while cargoPass(len(cargoPositions)):
+                    armPosition = 0
+                    while robotArm(len(armPositions[detectedShape])):
+                        ret, ogframe = cap.read()
+                        if cv2.waitKey(1) == ord('q'):
+                            break
                         pass
 
                     # then re-execute the first position of the arm so it can return to point of start
-                    cargoArmPosition = 0
-                    while cargoPass(1):
+                    armPosition = 0
+                    last_go_arm_execusion = 0
+                    while robotArm(1):
+                        ret, ogframe = cap.read()
+                        if cv2.waitKey(1) == ord('q'):
+                            break
                         pass
-                    cargoArmPosition = 0 # then reset arm position
+                    armPosition = 0 # then reset arm position
                     turnOffArm() # DEBUG: then turn arm off
-            else:
-                pickupRequest = True
-                if allowToPickUp:
-                    mode = "NRF"
-                    allowToPickUp = False
-                    pickupRequest = False
+                    print("Finished pickup")
 
-            if not comp_day:
-                if cv2.waitKey(1) == ord('q'):
-                    break
+                    mode = "Vision"
+                    print("AUTO: Vision mode")
+                    votes = resetVotes()
+                    # after pickup, either send us back to vision or move on to next step
+                    '''
+                    if shapes <= 0:
+                        print("Ran outta shapes")
+                        mode = "Car Control"
+                        print("AUTO: Car Control mode")
+                    else:
+                        mode = "Vision"
+                        print("AUTO: Vision mode")
+                    '''
+
+                if not comp_day:
+                    if cv2.waitKey(1) == ord('q'):
+                        break
+
+            elif mode == "Car Control":
+                if not comp_day:
+                    hideWindows()
+                    hideCargoArmWindows()
+                    hideArmWindows()
+                carControl()
+                cargo_pass_done = False
+                visionPermissionRequested = False
+
+            elif mode == "Line Follower":
+                if not comp_day:
+                    hideWindows()
+                    hideArmWindows()
+                carControlOn = False
+                cargo_pass_done = False
+                visionPermissionRequested = False
+                lineFollower()
+
+            elif mode == "Cargo Pass":
+                if not comp_day:
+                    hideWindows()
+                    hideArmWindows()
+                    #showCargoArmWindows()
+                #checkCargoArmUpdatedManually()
+                resetLineFollower()
+                carControlOn = False
+                visionPermissionRequested = False
+
+                if receivedAnglesBoolean:
+                    receivedAnglesBoolean = False
+                    changed = go_to_coordinates(mode, 0, MSFromPercent(current_manual_cargo_positions["mouth"], MOUTH_MIN, MOUTH_MAX), \
+                                        MSFromPercent(current_manual_cargo_positions["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
+                                        MSFromPercent(current_manual_cargo_positions["tilt"], TILT_MIN, TILT_MAX), \
+                                        MSFromPercent(current_manual_cargo_positions["spine"], SPINE_MIN, SPINE_MAX))
+                    #if changed:
+                    #    if time.time() - last_time_since_changed >= cargo_pos_save_period:
+                    #        print("saving cargo pos")
+                    #        last_time_since_changed = time.time()
+                    #        saved = False
+
+                '''
+                if not cargo_pass_done:
+                    if not pickupRequest:
+                        print("Cargo Pass: requesting permission to perform the maneuver")
+                        pickupRequest = True
+                    if allowToPickUp:
+                        allowToPickUp = False
+                        cargo_pass_done = True
+                        # pickup loop
+                        cargoArmPosition = 0
+                        last_go_cargo_arm_execusion = 0
+                        while cargoPass(len(cargoPositions)):
+                            pass
+
+                        # then re-execute the first position of the arm so it can return to point of start
+                        cargoArmPosition = 0
+                        while cargoPass(1):
+                            pass
+                        cargoArmPosition = 0 # then reset arm position
+                        turnOffArm() # DEBUG: then turn arm off
+                else:
+                    pickupRequest = True
+                    if allowToPickUp:
+                        mode = "NRF"
+                        allowToPickUp = False
+                        pickupRequest = False
+
+                if not comp_day:
+                    if cv2.waitKey(1) == ord('q'):
+                        break
+                '''
+
+            elif mode == "NRF":
+                if not comp_day:
+                    hideWindows()
+                    hideArmWindows()
+                    hideCargoArmWindows()
+                resetLineFollower()
+                carControlOn = False
+                cargo_pass_done = False
+                visionPermissionRequested = False
+                sendNRFFinishMsg(pi)
+
             '''
-
-        elif mode == "NRF":
-            if not comp_day:
-                hideWindows()
-                hideArmWindows()
-                hideCargoArmWindows()
-            resetLineFollower()
-            carControlOn = False
-            cargo_pass_done = False
-            visionPermissionRequested = False
-            sendNRFFinishMsg(pi)
-
-        '''
-        elif mode == "Unselected":
-            shapes = ogShapes
-            #if not comp_day:
-            #    hideWindows()
-            #    hideArmWindows()
-            resetLineFollower()
-            carControlOn = False
-            cargo_pass_done = False
-            visionPermissionRequested = False
-        '''
+            elif mode == "Unselected":
+                shapes = ogShapes
+                #if not comp_day:
+                #    hideWindows()
+                #    hideArmWindows()
+                resetLineFollower()
+                carControlOn = False
+                cargo_pass_done = False
+                visionPermissionRequested = False
+            '''
+        except Exception as e:
+            print("lol")
+            print("bruh", e)
 
 # Saving/Loading Work
 try:
