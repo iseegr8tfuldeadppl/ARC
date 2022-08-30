@@ -64,19 +64,19 @@ hsvs = { # https://stackoverflow.com/questions/10948589/choosing-the-correct-upp
     }
 }
 canny = {
-    "minSizeRatio": 0.3,
+    "minSizeRatio": 0.2,
     "maxSizeRatio": 0.9,
     "rectangle_width_to_height_ratio": 0.3,
     "countours_to_display": 7,
     "minGrayThresh": 127, #195
     "maxGrayThresh": 255, #255
-    "minCannyThresh": 26, # 13
-    "maxCannyThresh": 26, # 13
+    "minCannyThresh": 46, # 13
+    "maxCannyThresh": 47, # 13
     "gaussianBlurKernelSize": 5,
-    "errorFromCenterX": 0.3,
-    "errorFromCenterY": 0.3,
+    "errorFromCenterX": 0.2,
+    "errorFromCenterY": 0.2,
 
-    "dilation": 5,
+    "dilation": 11,
     "sigmaColor": 80,
     "sigmaSpace": 80,
     "pixel_neighborhood_diameter": 1
@@ -120,7 +120,7 @@ def resolveVotes():
         shape_with_most_votes = "Triangles"
 
     minimum_vote_requirement = 7
-    if shape_most_votes < 4:
+    if shape_most_votes <= 3:
         print("sadly less than", minimum_vote_requirement, "minimum vote requirement with", shape_most_votes, "votes")
         shape_with_most_votes = "Unknown"
     else:
@@ -494,7 +494,7 @@ def motion_feed():
             print("was unable to return arm positions bcz it wasn't inited yet")
             return "OOF, arm positions not inited yet"
         else:
-            return str(current_manual_cargo_positions["bottom"]) + "," + str(current_manual_cargo_positions["spine"]) + "," + str(current_manual_cargo_positions["tilt"]) + "," + str(current_manual_cargo_positions["mouth"]) + "," + "90"
+            return str(str(current_manual_cargo_positions["bottom"]) + "," + str(current_manual_cargo_positions["spine"]) + "," + str(current_manual_cargo_positions["tilt"]) + "," + str(current_manual_cargo_positions["mouth"]) + "," + "90")
     elif request.method == 'POST':
         receivedAngles = request.form.get("angles").split(",")
         donrf = request.form.get("turn_off_arm_request")
@@ -521,7 +521,7 @@ def mode_feed():
     global mode, shapes, detectedColor, detectedShape, allowToPickUp, pickupRequest
     global cargo_pass_done, current_manual_cargo_positions # cargo pass
     if request.method == 'GET':
-        return mode
+        return str(mode)
     elif request.method == 'POST':
 
         # for some preprocessing before going ahead with updating the mode
@@ -538,43 +538,44 @@ def mode_feed():
             }
 
         #if autoStartMode:
-        #if tempMode == "Arm":
-        #    #allowToPickUp = False
+        if tempMode == "Arm":
+            detectedShape = "Unknown"
+            #allowToPickUp = False
         #if tempMode == "Vision": # so if we send it back to shapes just detect one more shape before wanting to move
         #    if shapes < 0:
         #        shapes = ogShapes
 
         mode = tempMode
         print("Received a mode update:", tempMode)
-        return "Thanks, bozo"
-    return "Unknown command bozo"
+        return "Thanksbozo"
+    return "Unknowncommandbozo"
 
 @app.route('/car', methods=["GET", "POST"])
 def car_feed():
     global mode, forth, left, right, back
     if request.method == 'GET':
-        return mode
+        return str(mode)
     elif request.method == 'POST':
         states = request.form.get("states")
         forth, left, right, back = [state=="true" for state in states.split(" ")]
-        return "Thanks, bozo"
+        return "Thanksbozo"
     return "Unknown command bozo"
 
 @app.route('/allowpickup', methods=["GET", "POST"])
 def pickup_feed():
     global allowToPickUp, pickupRequest
     if request.method == 'GET':
-        return str(shapes) + ":" + str(pickupRequest) + ":" + str(detectedShape) + ":" + str(detectedColor) + ":" + str(mode)
+        return str(str(shapes) + ":" + str(pickupRequest) + ":" + str(detectedShape) + ":" + str(detectedColor) + ":" + str(mode))
     elif request.method == 'POST':
         allowToPickUp = True
         pickupRequest = False
-        print("hey")
-        return "Thanks, bozo"
-    return "Unknown command bozo"
+        return "Thanksbozo"
+    return "Unknowncommandbozo"
 
 @app.route('/startAuto', methods=["GET", "POST"])
 def startAuto_feed():
     global mode
+    '''
     if request.method == 'GET':
         return str(mode)
     elif request.method == 'POST':
@@ -582,8 +583,9 @@ def startAuto_feed():
             mode = "Vision"
         else:
             mode = "Unselected"
-        return "Thanks, bozo"
-    return "Unknown command bozo"
+        return "Thanksbozo"
+    '''
+    return "Unknowncommandbozo"
 
 @app.route('/', methods=["GET", "POST"])
 def ping_feed():
@@ -963,6 +965,7 @@ def switchViewedCargoPosition(event, x, y, flags, param):
 
 # Canny Work
 contours = []
+'''
 def colorCannyStuff():
     global contours
     global ogframe
@@ -1027,11 +1030,12 @@ def colorCannyStuff():
         if not checkpixel_left_button_down:
             print("surface_percentage", surface_percentage)
 
-        if surface_percentage < 0.6:
+        print(surface_percentage, surface_percentage<0.57, surface_percentage>=0.58)
+        if surface_percentage < 0.57:
             votes["Triangles"] += 1
             return
 
-        if surface_percentage >= 0.65 and surface_percentage < 0.80: # and not len(approx)==4
+        if surface_percentage >= 0.58 and surface_percentage < 0.80: # and not len(approx)==4
             votes["Circles"] += 1
             return
 
@@ -1069,6 +1073,7 @@ def colorCannyStuff():
         #    #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
         ##    votes["Circles"] += 1
         #    return
+'''
             
 
 
@@ -1571,14 +1576,14 @@ def edgeCannyStuff():
             ogframe = cv2.rectangle(ogframe, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), (0, 255, 0), 1)
 
             # shape classification method
-            if surface_percentage >= 0.65 and surface_percentage < 0.84: # and not len(approx)==4
+            if surface_percentage >= 0.58 and surface_percentage < 0.82: # and not len(approx)==4
                 votes["Circles"] += 1
                 break
 
-            if surface_percentage < 0.65: 
+            if surface_percentage < 0.57: 
                 votes["Triangles"] += 1
                 break
-            elif surface_percentage >= 0.87: #len(approx)==4 or 
+            elif surface_percentage >= 0.82: #len(approx)==4 or 
                 #print("width to height ratio", abs( 1 - float(w)/h ))
                 canny["rectangle_width_to_height_ratio"] = 0.3 # CAN GIVE ERRORS HERE: i'm hardcoding this
                 if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
@@ -1671,6 +1676,8 @@ def autoThread():
                     if detectedShape == "Circles" or detectedShape == "Rectangles":
                         continue
 
+                    #print("you're not picking up")
+                    #False and 
                     if firstVisionPermissionRequested:
                         if not visionPermissionRequested:
                             print("Vision: (DEBUG: permission to move onto arm sent)")
@@ -1688,7 +1695,7 @@ def autoThread():
                     try:
                         # IMPORTANT-TOOLS: show these commented frames so u can tune the image
                         #cv2.imshow('edges', edges)
-                        #cv2.imshow('dilated', dilated)
+                        cv2.imshow('dilated', dilated)
                         cv2.imshow('output', ogframe)
                     except:
                         pass
@@ -1717,37 +1724,40 @@ def autoThread():
 
                     # pickup loop
                     armPosition = 0
-                    while robotArm(len(armPositions[detectedShape])):
-                        ret, ogframe = cap.read()
-                        if cv2.waitKey(1) == ord('q'):
-                            break
-                        pass
+                    if detectedShape != "Unknown":
+                        while robotArm(len(armPositions[detectedShape])):
+                            ret, ogframe = cap.read()
+                            if cv2.waitKey(1) == ord('q'):
+                                break
+                            pass
 
-                    # then re-execute the first position of the arm so it can return to point of start
-                    armPosition = 0
-                    last_go_arm_execusion = 0
-                    while robotArm(1):
-                        ret, ogframe = cap.read()
-                        if cv2.waitKey(1) == ord('q'):
-                            break
-                        pass
-                    armPosition = 0 # then reset arm position
-                    turnOffArm() # DEBUG: then turn arm off
-                    print("Finished pickup")
+                        # then re-execute the first position of the arm so it can return to point of start
+                        armPosition = 0
+                        last_go_arm_execusion = 0
+                        while robotArm(1):
+                            ret, ogframe = cap.read()
+                            if cv2.waitKey(1) == ord('q'):
+                                break
+                            pass
+                        armPosition = 0 # then reset arm position
+                        turnOffArm() # DEBUG: then turn arm off
+                        print("Finished pickup")
 
-                    mode = "Vision"
-                    print("AUTO: Vision mode")
-                    votes = resetVotes()
-                    # after pickup, either send us back to vision or move on to next step
-                    '''
-                    if shapes <= 0:
-                        print("Ran outta shapes")
-                        mode = "Car Control"
-                        print("AUTO: Car Control mode")
-                    else:
                         mode = "Vision"
                         print("AUTO: Vision mode")
-                    '''
+                        votes = resetVotes()
+                        # after pickup, either send us back to vision or move on to next step
+                        '''
+                        if shapes <= 0:
+                            print("Ran outta shapes")
+                            mode = "Car Control"
+                            print("AUTO: Car Control mode")
+                        else:
+                            mode = "Vision"
+                            print("AUTO: Vision mode")
+                        '''
+                    else:
+                        checkArmUpdatedManually()
 
                 if not comp_day:
                     if cv2.waitKey(1) == ord('q'):
