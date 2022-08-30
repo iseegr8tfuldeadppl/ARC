@@ -64,14 +64,14 @@ hsvs = { # https://stackoverflow.com/questions/10948589/choosing-the-correct-upp
     }
 }
 canny = {
-    "minSizeRatio": 0.1,
-    "maxSizeRatio": 1.,
+    "minSizeRatio": 0.3,
+    "maxSizeRatio": 0.9,
     "rectangle_width_to_height_ratio": 0.3,
     "countours_to_display": 7,
     "minGrayThresh": 127, #195
     "maxGrayThresh": 255, #255
-    "minCannyThresh": 25, # 13
-    "maxCannyThresh": 35, # 13
+    "minCannyThresh": 26, # 13
+    "maxCannyThresh": 26, # 13
     "gaussianBlurKernelSize": 5,
     "errorFromCenterX": 0.3,
     "errorFromCenterY": 0.3,
@@ -98,15 +98,17 @@ def resetVotes():
         "Yellow": 0,
         "Orange": 0,
         "Start Of Vote": time.time(),
-        "Max Vote Period": 1 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
+        "Max Vote Period": 8 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
     }
 
 def resolveVotes():
-    totalVotes = votes["Circles"] + votes["Squares"] + votes["Rectangles"] + votes["Triangles"]
+    #totalVotes = votes["Circles"] + votes["Squares"] + votes["Rectangles"] + votes["Triangles"]
+    
+    # IMPORTANT-TOOLS: for seeing what robot is voting for
+    print("votes", votes["Circles"], votes["Squares"], votes["Rectangles"], votes["Triangles"])
+
     shape_with_most_votes = "Circles"
     shape_most_votes = votes["Circles"]
-    #if votes["Circles"] == 1: # if vote of circles was only one then bruh don't take it into account
-    #    shape_most_votes = 0
     if votes["Squares"] > shape_most_votes:
         shape_most_votes = votes["Squares"]
         shape_with_most_votes = "Squares"
@@ -117,24 +119,12 @@ def resolveVotes():
         shape_most_votes = votes["Triangles"]
         shape_with_most_votes = "Triangles"
 
-    if shape_most_votes == 0:
+    minimum_vote_requirement = 7
+    if shape_most_votes < 4:
+        print("sadly less than", minimum_vote_requirement, "minimum vote requirement with", shape_most_votes, "votes")
         shape_with_most_votes = "Unknown"
-
-    '''
-    if shape_with_most_votes == "Circles" and totalVotes < 3: # if it was deemed a circle, lemme confirm t9i9a
-        # simply if it even is able to find 4 vertices, it's most likely a square, circles can't do that
-        if votes["Rectangles"] > 0:
-            shape_most_votes = votes["Rectangles"]
-            shape_with_most_votes = "Rectangles"
-        elif votes["Squares"] > 0:
-            shape_most_votes = votes["Squares"]
-            shape_with_most_votes = "Squares"
-
-    # simply if it even is able to find 3 vertices, it's most likely a triangle, circles can't do that
-    if votes["Triangles"] > 0:
-        shape_most_votes = votes["Triangles"]
-        shape_with_most_votes = "Triangles"
-    '''
+    else:
+        print("shape_most_votes", shape_most_votes)
 
 
 
@@ -492,7 +482,7 @@ log.setLevel(logging.ERROR)
 def index():
     return "Bozo"
 
-mode = "Arm" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
+mode = "Vision" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
 print("Initial mode is", mode, "btw")
 receivedAnglesBoolean = False 
 @app.route('/motion', methods=["GET", "POST"])
@@ -618,22 +608,22 @@ def loadVars():
         All = pickle.load(f)
         #if All.get("current_manual_cargo_positions") != None:
         #    current_manual_cargo_positions = All["current_manual_cargo_positions"]
-        if All.get("currentarm") != None:
+        if All.get("currentarm") is not None:
             currentarm = All["currentarm"]
             CURRENT_MOUTH = currentarm["CURRENT_MOUTH"]
             CURRENT_SPINE = currentarm["CURRENT_SPINE"]
             CURRENT_TILT = currentarm["CURRENT_TILT"]
             CURRENT_BOTTOM = currentarm["CURRENT_BOTTOM"]
-        if All.get("hsvs") != None:
+        if All.get("hsvs") is not None:
             hsvs = All["hsvs"]
-        #print("FORDEBUGG: you're not pulling canny")
-        if All.get("canny") != None:
-            canny = All["canny"]
+        print("FORDEBUGG: you're not pulling canny")
+        #if All.get("canny") is not None:
+        #    canny = All["canny"]
         #print("FORDEBUGG: you're not pulling positions")
-        if All.get("armPositions") != None:
+        if All.get("armPositions") is not None:
             armPositions = All["armPositions"]
         #print("FORDEBUGG: you're not pulling positions")
-        if All.get("cargoPositions") != None:
+        if All.get("cargoPositions") is not None:
             cargoPositions = All["cargoPositions"]
 def notifySave():
     global saved, last_slider_update
@@ -1038,22 +1028,22 @@ def colorCannyStuff():
         if not checkpixel_left_button_down:
             print("surface_percentage", surface_percentage)
 
-        if surface_percentage >= 0.65 and surface_percentage < 0.87: # and not len(approx)==4
+        if surface_percentage < 0.6:
+            votes["Triangles"] += 1
+            return
+
+        if surface_percentage >= 0.65 and surface_percentage < 0.80: # and not len(approx)==4
             votes["Circles"] += 1
             return
 
-        if surface_percentage < 0.65:
-            votes["Triangles"] += 1
+        #print("width to height ratio", abs( 1 - float(w)/h ))
+        canny["rectangle_width_to_height_ratio"] = 0.3 # CAN GIVE ERRORS HERE: i'm hardcoding this
+        if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
+            votes["Squares"] += 1
             return
-        elif len(approx)==4 or surface_percentage >= 0.87:
-            #print("width to height ratio", abs( 1 - float(w)/h ))
-            canny["rectangle_width_to_height_ratio"] = 0.3 # CAN GIVE ERRORS HERE: i'm hardcoding this
-            if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
-                votes["Squares"] += 1
-                return
-            else:
-                votes["Rectangles"] += 1
-                return
+        else:
+            votes["Rectangles"] += 1
+            return
 
         
         #if len(approx) <= 3:
@@ -1145,9 +1135,10 @@ emptyCannyImage = None
 def VisionInits():
     global emptyCannyImage
     cv2.namedWindow("output")
-    cv2.setMouseCallback("output", checkPixel)
+    #cv2.setMouseCallback("output", checkPixel)
 
     # HSV: Inits
+    '''
     cv2.namedWindow("sliders")
     cv2.setMouseCallback("sliders", switchColor)
     cv2.createTrackbar('HMin', 'sliders', 0, 179, HMinChanged)
@@ -1156,6 +1147,7 @@ def VisionInits():
     cv2.createTrackbar('HMax', 'sliders', 0, 179, HMaxChanged)
     cv2.createTrackbar('SMax', 'sliders', 0, 255, SMaxChanged)
     cv2.createTrackbar('VMax', 'sliders', 0, 255, VMaxChanged)
+    '''
 
     # Canny: Inits
     cv2.namedWindow("cannySliders") #, cv2.WINDOW_AUTOSIZE
@@ -1208,21 +1200,24 @@ def updateCanny():
     cv2.setTrackbarPos('Sigma Color','cannySliders', canny["sigmaColor"])
     cv2.setTrackbarPos('Sigma Space','cannySliders', canny["sigmaSpace"])
     cv2.setTrackbarPos('d','cannySliders', canny["pixel_neighborhood_diameter"])
+    print("bro")
+
 
 # Vision: Functions
 def hideWindows():
     global windows_shown
     if windows_shown:
         windows_shown = False
-        cv2.destroyAllWindows()
+        if mode != "Arm":
+            cv2.destroyAllWindows()
 def showWindows():
     global windows_shown
     if not windows_shown:
         windows_shown = True
         VisionInits()
-        updateSliders()
+        #updateSliders()
         updateCanny()
-        updateButtons()
+        #updateButtons()
 
 # Cargo: Functions
 def wrap4(index):
@@ -1290,7 +1285,8 @@ def hideArmWindows():
     global arm_windows_shown
     if arm_windows_shown:
         arm_windows_shown = False
-        cv2.destroyAllWindows()
+        if mode != "Vision":
+            cv2.destroyAllWindows()
 def showArmWindows():
     global arm_windows_shown
     if not arm_windows_shown:
@@ -1521,7 +1517,7 @@ def detecting_shape():
 
 # edge detection
 def edgeCannyStuff():
-    global votes, ogframe
+    global votes, ogframe, dilated, edges
     bilateral_blur = cv2.bilateralFilter(ogframe, canny["pixel_neighborhood_diameter"], canny["sigmaColor"], canny["sigmaSpace"]) # 15 # https://www.geeksforgeeks.org/python-bilateral-filtering/
 
     edges = cv2.Canny(bilateral_blur, canny["minCannyThresh"], canny["maxCannyThresh"])
@@ -1531,7 +1527,7 @@ def edgeCannyStuff():
 
     contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
-    empty = np.zeros((ogframe.shape[0], ogframe.shape[1]), np.uint8)
+    #empty = np.zeros((ogframe.shape[0], ogframe.shape[1]), np.uint8)
 
     for i in range(len(contours)-1, -1, -1):
         
@@ -1543,8 +1539,11 @@ def edgeCannyStuff():
         heightRatio = h/ogframe.shape[0]
 
         # if it's large enough
-        if widthRatio >= 0.1 and heightRatio >= 0.1:
+        if widthRatio >= canny["minSizeRatio"] and heightRatio >= canny["minSizeRatio"] and \
+            widthRatio <= canny["maxSizeRatio"] and heightRatio <= canny["maxSizeRatio"]:
             
+
+
             # if it's off of center constraints
             x_center_of_img, y_center_of_img = (ogframe.shape[1]/2, ogframe.shape[0]/2) # x, y
             if abs(x_center_of_img - center_x) / x_center_of_img > canny["errorFromCenterX"] or \
@@ -1570,7 +1569,7 @@ def edgeCannyStuff():
 
             # shape classification method
             if surface_percentage >= 0.65 and surface_percentage < 0.84: # and not len(approx)==4
-                #votes["Circles"] += 1
+                votes["Circles"] += 1
                 break
 
             if surface_percentage < 0.65: 
@@ -1583,7 +1582,7 @@ def edgeCannyStuff():
                     votes["Squares"] += 1
                     break
                 else:
-                    #votes["Rectangles"] += 1
+                    votes["Rectangles"] += 1
                     break
                 break
 
@@ -1610,6 +1609,7 @@ last_time_since_changed = time.time()
 # Auto: Functions
 firstVisionPermissionRequested = False
 def autoThread():
+    global ogframe, cap
     global last_time_since_changed # manual cargo pass
     global allowToPickUp, pickupRequest, detectedColor, detectedShape, carControlOn, shapes, mode
     global armPosition, last_go_arm_execusion # arm mode
@@ -1620,29 +1620,38 @@ def autoThread():
 
     print("COMP DAY STUFF: APPROVE ALL REQUESTS")
     # DISABLE ALL ALLOW PICKUPS HERE BY SETTING THE BOOLEANS DIRECTLY
-    #if firstVisionPermissionRequested: ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
-    #    allowToPickUp = True
+    if firstVisionPermissionRequested: #ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
+        allowToPickUp = True
 
     #mode = "Vision" # in auto mode, mode begins from vision
     print("AUTO: Vision mode") # always starts with vision
     visionPermissionRequested = False
     firstVisionPermissionRequested = False
     while True:
-        if not comp_day:
-            # save to pickle file
-            if not saved:
-                if time.time() - last_slider_update >= update_delay:
-                    saved = True
-                    last_slider_update = time.time()
-                    saveVars()
+        
+        #print("COMP DAY STUFF: APPROVE ALL REQUESTS")
+        # DISABLE ALL ALLOW PICKUPS HERE BY SETTING THE BOOLEANS DIRECTLY
+        if firstVisionPermissionRequested: #ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
+            allowToPickUp = True
+
+        #if not comp_day:
+        # save to pickle file
+        if not saved:
+            if time.time() - last_slider_update >= update_delay:
+                saved = True
+                print("saving", time.time())
+                last_slider_update = time.time()
+                saveVars()
 
         if mode == "Vision":
             if not comp_day:
                 hideArmWindows()
                 hideCargoArmWindows()
                 showWindows()
-
+    
+            print("bro2")
             resetLineFollower()
+            print("bro3")
             carControlOn = False
             cargo_pass_done = False
             #detecting_shape()
@@ -1660,6 +1669,12 @@ def autoThread():
                             print("Vision: (DEBUG: permission to start vision sent)")
                             pickupRequest = True
 
+                if detectedShape == "Unknown":
+                    continue
+
+                if detectedShape == "Circles" or detectedShape == "Rectangles":
+                    continue
+
                 if firstVisionPermissionRequested:
                     if not visionPermissionRequested:
                         print("Vision: (DEBUG: permission to move onto arm sent)")
@@ -1675,15 +1690,9 @@ def autoThread():
             if not comp_day:
                 # DEBUGGING:
                 try:
-                    #edgesBGR = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-                    #thresholdBGR = cv2.cvtColor(threshold, cv2.COLOR_GRAY2BGR)
-                    #dilatedBGR = cv2.cvtColor(dilated, cv2.COLOR_GRAY2BGR)
-                    #contourMaskBGR = cv2.cvtColor(contourMask, cv2.COLOR_GRAY2BGR)
-                    #maskBGR = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-                    #dstBGR = cv2.cvtColor(dst, cv2.COLOR_GRAY2BGR)
-                    #if edges is not None and threshold is not None and dst is not None:
-                    #    numpy_horizontal = np.hstack((threshold, dilated)) #thresholdBGR, contourCroppedOGFrame, contourCroppedFrame, edgesBGR, dst, ogframe
-                    #    cv2.imshow('output2', numpy_horizontal)
+                    # IMPORTANT-TOOLS: show these commented frames so u can tune the image
+                    #cv2.imshow('edges', edges)
+                    #cv2.imshow('dilated', dilated)
                     cv2.imshow('output', ogframe)
                 except:
                     pass
@@ -1713,12 +1722,18 @@ def autoThread():
                 # pickup loop
                 armPosition = 0
                 while robotArm(len(armPositions[detectedShape])):
+                    ret, ogframe = cap.read()
+                    if cv2.waitKey(1) == ord('q'):
+                        break
                     pass
 
                 # then re-execute the first position of the arm so it can return to point of start
                 armPosition = 0
                 last_go_arm_execusion = 0
                 while robotArm(1):
+                    ret, ogframe = cap.read()
+                    if cv2.waitKey(1) == ord('q'):
+                        break
                     pass
                 armPosition = 0 # then reset arm position
                 turnOffArm() # DEBUG: then turn arm off
@@ -1726,6 +1741,7 @@ def autoThread():
 
                 mode = "Vision"
                 print("AUTO: Vision mode")
+                votes = resetVotes()
                 # after pickup, either send us back to vision or move on to next step
                 '''
                 if shapes <= 0:
@@ -1850,6 +1866,13 @@ for colorName, _ in hsvs.items():
     selectedColor = colorName
     break
 
+# init arm
+go_to_coordinates("Arm", 0, MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+    MSFromPercent(armPositions["Squares"][0]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
+    MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), \
+    MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX),
+    shape="Squares")
+
 # Server: start server
 thread = Thread(target=server)
 thread.start()
@@ -1857,5 +1880,5 @@ thread.start()
 # Main: loop
 if autoStartMode:
     autoThread()
-else:
-    debugThread()
+#else:
+#    debugThread()

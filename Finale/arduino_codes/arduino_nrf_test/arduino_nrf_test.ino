@@ -25,10 +25,10 @@ void setup() {
 }
 
 void loop() {
-  motor.write(0);
-  delay(1000);
-  motor.write(180);
-  delay(1000);
+  if(Serial.available()){
+    String s = Serial.readStringUntil('\n');
+    motor.write(s.toInt());
+  }
   
   while (radio.available()) {
     read_response();
