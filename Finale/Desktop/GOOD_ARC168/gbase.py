@@ -40,7 +40,7 @@ def turnOffArm():
 turnOffArm()
 
 print("you're defaulting square pickup method as the universal pickup")
-def go_to_coordinates(mode, position, m, b, t, s, step=60, delay=0.02, shape=None): # 0.05
+def go_to_coordinates(mode, position, m, b, t, s, step=30, delay=0.02, shape=None): # 0.05
     global CURRENT_MOUTH, CURRENT_BOTTOM, CURRENT_TILT, CURRENT_SPINE
 
     # manual mode
@@ -56,46 +56,17 @@ def go_to_coordinates(mode, position, m, b, t, s, step=60, delay=0.02, shape=Non
         pi.set_servo_pulsewidth(SPINE, CURRENT_SPINE)
         return m!=CURRENT_MOUTH or b!=CURRENT_BOTTOM or t!=CURRENT_TILT or s!=CURRENT_SPINE
     
-    shape = "Squares"
+    #shape = "Squares"
     if mode == "Arm":
-
-        if shape == "Squares":
-            if position == 2:
-                delay = 0.02 # 0.05
-                step = 80 # 80
-            elif position == 3: # rising back up
-                delay = 0.05 # 0.05
-                step = 80 # 80
-            elif position == 4: # turning around to cargo
-                delay = 0.04 # 0.03
-                step = 100 # 100
-
-        elif shape == "Circles":
-            delay = 0.05
-            step = 30
-            if position == 3:
-                delay = 0.02 # 0.05
-                step = 80 # 80
-            elif position == 4:
-                delay = 0.01 # 0.03
-                step = 100 # 100
-
-        elif shape == "Rectangles":
-            if position == 3:
-                delay = 0.02 # 0.05
-                step = 80 # 80
-            elif position == 4:
-                delay = 0.01 # 0.03
-                step = 100 # 100
-
-        elif shape == "Triangles":
-            if position == 3:
-                delay = 0.02 # 0.05
-                step = 80 # 80
-            elif position == 4:
-                delay = 0.02 # 0.03
-                step = 100 # 100
-            print("oof issa triangle")
+        if position == 3:
+            delay = 0.02 # 0.05
+            step = 50 # 80
+        elif position == 4: # rising back up
+            delay = 0.03 # 0.05
+            step = 50 # 80
+        elif position == 5: # turning around to cargo
+            delay = 0.02 # 0.03
+            step = 50 # 100
 
     mouth_step = (m - CURRENT_MOUTH) / step
     bottom_step = (b - CURRENT_BOTTOM) / step

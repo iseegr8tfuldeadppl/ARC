@@ -76,7 +76,7 @@ canny = {
     "errorFromCenterX": 0.2,
     "errorFromCenterY": 0.2,
 
-    "dilation": 11,
+    "dilation": 6,
     "sigmaColor": 80,
     "sigmaSpace": 80,
     "pixel_neighborhood_diameter": 1
@@ -213,183 +213,53 @@ cargoPositions = [{ # initial arm stance
     }]
 
 # Arm: Arrays
-armPositions = {
-    "Squares": [{ # initial arm stance
-        "mouth": 33,
-        "bottom": 50,
-        "tilt": 37,
-        "spine": 33
+squarePositions = [{ # initial arm stance
+        "mouth": 5,
+        "bottom": 92,
+        "tilt": 92,
+        "spine": 42
     },
-    { # go right above the shape or so
-        "mouth": 25,
-        "bottom": 45,
+    { # go down to face the shape before going forward
+        "mouth": 5,
+        "bottom": 92,
         "tilt": 0,
-        "spine": 88
+        "spine": 65
     },
     { # get to cupping the shape
-        "mouth": 53,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
+        "mouth": 0,
+        "bottom": 92,
+        "tilt": 6,
+        "spine": 92
     },
     { # close mouth
-        "mouth": 52,
-        "bottom": 45,
-        "tilt": 38,
-        "spine": 37
+        "mouth": 60,
+        "bottom": 92,
+        "tilt": 6,
+        "spine": 92
     },
-    { # initial arm stance again
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
+    { # get back up
+        "mouth": 60,
+        "bottom": 92,
+        "tilt": 100,
+        "spine": 49
     },
-    { # turn around to cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
+    { # turn around
+        "mouth": 60,
+        "bottom": 0,
+        "tilt": 100,
+        "spine": 49
     },
-    { # let go into cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    }],
-
-
-    "Circles": [{ # initial arm stance
-        "mouth": 33,
-        "bottom": 50,
-        "tilt": 37,
-        "spine": 33
-    },
-    { # go right above the shape or so
-        "mouth": 25,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # get to cupping the shape
-        "mouth": 53,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # close mouth
-        "mouth": 52,
-        "bottom": 45,
-        "tilt": 38,
-        "spine": 37
-    },
-    { # initial arm stance again
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # turn around to cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # let go into cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    }],
-
-
-    "Triangles": [{ # initial arm stance
-        "mouth": 33,
-        "bottom": 50,
-        "tilt": 37,
-        "spine": 33
-    },
-    { # go right above the shape or so
-        "mouth": 25,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # get to cupping the shape
-        "mouth": 53,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # close mouth
-        "mouth": 52,
-        "bottom": 45,
-        "tilt": 38,
-        "spine": 37
-    },
-    { # initial arm stance again
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # turn around to cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # let go into cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    }],
-
-
-    "Rectangles": [{ # initial arm stance
-        "mouth": 33,
-        "bottom": 50,
-        "tilt": 37,
-        "spine": 33
-    },
-    { # go right above the shape or so
-        "mouth": 25,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # get to cupping the shape
-        "mouth": 53,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # close mouth
-        "mouth": 52,
-        "bottom": 45,
-        "tilt": 38,
-        "spine": 37
-    },
-    { # initial arm stance again
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # turn around to cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # let go into cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
+    { # let go
+        "mouth": 0,
+        "bottom": 0,
+        "tilt": 100,
+        "spine": 49
     }]
+armPositions = {
+    "Squares": squarePositions.copy(),
+    "Triangles": squarePositions.copy()
 }
-
+ 
 # GUI: Vars
 fontScale = 0.8
 thickness = 1
@@ -418,18 +288,15 @@ cap = cv2.VideoCapture(0)
 #cap.set(cv2.CAP_PROP_FPS, (1/0.9))            # Sets FPS accordingly
 
 # Cargo: Vars
-cargo_pass_done = False
 viewed_cargoArmPosition = 0
 cargoArmPosition = 0
 cargoArmUpdated = False
 go_cargo_arm = False
 last_go_cargo_arm_execusion = 0
-cargo_arm_windows_shown = False
 
 # Arm: Vars
 last_go_arm_execusion = 0
 delay_between_arm_execusions = 0.2 # 0.2 or 0.5 or 2 seconds
-arm_windows_shown = False
 armPosition = 0
 viewed_armPosition = 0
 viewed_armShapePosition = 0 # just a random default
@@ -451,7 +318,6 @@ threshold = None
 dst = None
 edges = None
 dilated = None
-windows_shown = False
 selectedColor = "Unselected"
 selectedColorIndex = 0
 buttons_height, buttons_width = [50, 250]
@@ -525,8 +391,8 @@ def motion_feed():
 current_manual_cargo_positions = None
 @app.route('/mode', methods=["GET", "POST"])
 def mode_feed():
-    global mode, shapes, detectedColor, detectedShape, allowToPickUp, pickupRequest
-    global cargo_pass_done, current_manual_cargo_positions # cargo pass
+    global mode, detectedColor, detectedShape, allowToPickUp, pickupRequest
+    global current_manual_cargo_positions # cargo pass
     if request.method == 'GET':
         return str(mode)
     elif request.method == 'POST':
@@ -535,7 +401,6 @@ def mode_feed():
         tempMode = request.form.get("mode")
 
         if tempMode == "Cargo Pass":
-            cargo_pass_done = False
             
             current_manual_cargo_positions = {
                 "mouth": armPositions["Squares"][0]["mouth"],
@@ -547,10 +412,6 @@ def mode_feed():
         #if autoStartMode:
         if tempMode == "Arm":
             detectedShape = "Unknown"
-            #allowToPickUp = False
-        #if tempMode == "Vision": # so if we send it back to shapes just detect one more shape before wanting to move
-        #    if shapes < 0:
-        #        shapes = ogShapes
 
         mode = tempMode
         print("Received a mode update:", tempMode)
@@ -603,11 +464,11 @@ def server():
     app.run(host='0.0.0.0', port=1337, threaded=True)
 
 
-
 # Saving functions
 def saveVars():
     with open(filename, 'wb') as f:
-        pickle.dump({"hsvs": hsvs, "canny": canny, "armPositions": armPositions, "cargoPositions": cargoPositions, "currentarm": {"CURRENT_MOUTH": CURRENT_MOUTH, "CURRENT_SPINE": CURRENT_SPINE, "CURRENT_TILT": CURRENT_TILT, "CURRENT_BOTTOM": CURRENT_BOTTOM}}, f) #, "current_manual_cargo_positions": current_manual_cargo_positions
+        #"hsvs": hsvs, "cargoPositions": cargoPositions, "currentarm": {"CURRENT_MOUTH": CURRENT_MOUTH, "CURRENT_SPINE": CURRENT_SPINE, "CURRENT_TILT": CURRENT_TILT, "CURRENT_BOTTOM": CURRENT_BOTTOM}
+        pickle.dump({"canny": canny, "armPositions": armPositions}, f) #, "current_manual_cargo_positions": current_manual_cargo_positions
         #print("Successfully saved")
 def loadVars():
     global hsvs, canny, armPositions, cargoPositions, current_manual_cargo_positions
@@ -616,23 +477,13 @@ def loadVars():
         All = pickle.load(f)
         #if All.get("current_manual_cargo_positions") != None:
         #    current_manual_cargo_positions = All["current_manual_cargo_positions"]
-        #if All.get("currentarm") is not None:
-        #    currentarm = All["currentarm"]
-        #    CURRENT_MOUTH = currentarm["CURRENT_MOUTH"]
-        #    CURRENT_SPINE = currentarm["CURRENT_SPINE"]
-        #    CURRENT_TILT = currentarm["CURRENT_TILT"]
-        #    CURRENT_BOTTOM = currentarm["CURRENT_BOTTOM"]
-        if All.get("hsvs") is not None:
-            hsvs = All["hsvs"]
         print("FORDEBUGG: you're not pulling canny")
         #if All.get("canny") is not None:
         #    canny = All["canny"]
         #print("FORDEBUGG: you're not pulling positions")
         if All.get("armPositions") is not None:
-            armPositions = All["armPositions"]
-        #print("FORDEBUGG: you're not pulling positions")
-        if All.get("cargoPositions") is not None:
-            cargoPositions = All["cargoPositions"]
+            armPositions["Squares"] = All["armPositions"]["Squares"]
+            armPositions["Triangles"] = All["armPositions"]["Squares"]
 def notifySave():
     global saved, last_slider_update
     saved = False
@@ -670,6 +521,7 @@ def wrap(index):
         return len(hsvs)-1
     else:
         return index
+'''
 def updateButtons():
     buttons = np.ones((buttons_height, buttons_width, 3), np.uint8)
     # this entire coode here without spaces in between is to just color the buttons according to next and previous color for ease of use don't ask why
@@ -694,6 +546,9 @@ def updateButtons():
     buttons = cv2.putText(buttons, "Previous", (10, 35), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (0,0,0), thickness, cv2.LINE_AA)
     buttons = cv2.putText(buttons, "Next", (160, 35), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (0,0,0), thickness, cv2.LINE_AA)
     cv2.imshow("sliders", buttons)
+'''
+
+'''
 def updateSliders():
     global selectedColor
     #print("selectedColor", selectedColor)
@@ -710,46 +565,7 @@ def updateSliders():
             cv2.setTrackbarPos('VMax', 'sliders', colorContent["range"]["max"][2])  
             break
         index += 1
-
-# Vision: GUI Functions
-ogframeHSV = None
-checkpixel_left_button_down = False
-def checkPixel(event, x, y, flags, param):
-    global checkpixel_left_button_down
-    if event==cv2.EVENT_MOUSEMOVE:
-        if checkpixel_left_button_down:
-            if ogframeHSV is not None:
-                print("HSV VALUES HERE", ogframeHSV[y][x])
-    elif event==cv2.EVENT_LBUTTONDOWN:
-        checkpixel_left_button_down = True
-        if ogframeHSV is not None:
-            print("HSV VALUES HERE", ogframeHSV[y][x])
-    elif event==cv2.EVENT_LBUTTONUP:
-        checkpixel_left_button_down = False
-
-
-
-def switchColor(event, x, y, flags, param):
-    global color_button_down, selectedColorIndex
-    if event==cv2.EVENT_LBUTTONDOWN:
-        if not color_button_down:
-            color_button_down = True
-
-            # previous
-            if x < buttons_width // 2:
-                selectedColorIndex -= 1
-                selectedColorIndex = wrap(selectedColorIndex)
-    
-            # next
-            else:
-                selectedColorIndex += 1
-                selectedColorIndex = wrap(selectedColorIndex)
-
-            updateSliders()
-            updateButtons()
-
-    elif event==cv2.EVENT_LBUTTONUP:
-        color_button_down = False
+'''
 
 # Canny Functions
 def minSizeChanged(x):
@@ -839,6 +655,51 @@ def updateArmSliders():
     cv2.setTrackbarPos('Tilt', 'armSliders', armPositions[armShapes[viewed_armShapePosition]][viewed_armPosition]["tilt"])
     cv2.setTrackbarPos('Spine', 'armSliders', armPositions[armShapes[viewed_armShapePosition]][viewed_armPosition]["spine"])
 
+
+# Mode Selection: GUI Functions
+
+# Arm: Gui Functions
+modeClickedButtonDown = False
+def switchModeClicked(event, x, y, flags, param):
+    global modeClickedButtonDown # gui stuff
+    global mode # mode switching
+    global current_manual_cargo_positions # cargo pass
+    global detectedShape # arm mode
+
+    if event==cv2.EVENT_LBUTTONDOWN:
+        if not modeClickedButtonDown:
+            modeClickedButtonDown = True
+
+            # bottom most buttons
+            # left shape in list
+            # we have a different arm course of positions for different shapes
+            if x < buttons_width//2:
+                mode = "Vision"
+            elif x < buttons_width:
+                detectedShape = "Unknown"
+                mode = "Arm"
+            elif x < (buttons_width*3)//2:
+                mode = "Line Follower"
+            elif x < buttons_width*2:
+                mode = "Car Control"
+            elif x < (buttons_width*5)//2:
+                current_manual_cargo_positions = {
+                    "mouth": armPositions["Squares"][0]["mouth"],
+                    "bottom": armPositions["Squares"][0]["bottom"],
+                    "tilt": armPositions["Squares"][0]["tilt"],
+                    "spine": armPositions["Squares"][0]["spine"],
+                }
+                mode = "Cargo Pass"
+            elif x < buttons_width*3:
+                mode = "NRF"
+            elif x < (buttons_width*7)//2:
+                mode = "Unselected"
+            print("Received a mode update:", mode)
+
+    elif event==cv2.EVENT_LBUTTONUP:
+        modeClickedButtonDown = False
+
+
 # Arm: Gui Functions
 def switchViewedPosition(event, x, y, flags, param):
     global button_down, viewed_armPosition, armPosition, armUpdated, viewed_armShapePosition
@@ -893,302 +754,26 @@ def switchViewedPosition(event, x, y, flags, param):
     elif event==cv2.EVENT_LBUTTONUP:
         button_down = False
 
-# Cargo Pass: GUI Functions
-
-def updateCargoArmButtons():
-
-    buttons = np.ones((buttons_height, buttons_width, 3), np.uint8)
-    # this entire coode here without spaces in between is to just color the buttons according to next and previous color for ease of use don't ask why
-    previous_index = viewed_cargoArmPosition - 1
-    next_index = viewed_cargoArmPosition + 1
-    previous_index = wrap4(previous_index)
-    next_index = wrap4(next_index)
-    index = 0
-
-    buttons[:,0:buttons_width//2] = (255, 255, 255)      # (B, G, R)
-    buttons[:,buttons_width//2:buttons_width] = (0, 0, 0)
-    
-    buttons = cv2.putText(buttons, str(viewed_cargoArmPosition), (115, 17), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (255, 0, 0), colorNameThickness, cv2.LINE_AA)
-    
-    buttons = cv2.putText(buttons, "Previous", (10, 35), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (0,0,0), thickness, cv2.LINE_AA)
-    buttons = cv2.putText(buttons, "Next", (160, 35), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (255, 255, 255), thickness, cv2.LINE_AA)
-    buttons = cv2.putText(buttons, str(previous_index), (60, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), thickness, cv2.LINE_AA)
-    buttons = cv2.putText(buttons, str(next_index), (180, 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), thickness, cv2.LINE_AA)
-    
-    
-    apply = np.zeros((buttons_height, buttons_width, 3), np.uint8)
-    apply[:,0:buttons_width//2] = (0, 0, 0)
-    apply[:,buttons_width//2:buttons_width] = (255, 255, 255) # (B, G, R)
-    apply = cv2.putText(apply, "Apply", (35, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), thickness, cv2.LINE_AA)
-    apply = cv2.putText(apply, "Go", (170, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), thickness, cv2.LINE_AA)
-    
-    numpy_vertical = np.vstack((buttons, apply))
-
-    cv2.imshow("cargoArmSliders", numpy_vertical)
-def updateCargoArmSliders():
-    cv2.setTrackbarPos('Mouth', 'cargoArmSliders', cargoPositions[viewed_cargoArmPosition]["mouth"])
-    cv2.setTrackbarPos('Bottom', 'cargoArmSliders', cargoPositions[viewed_cargoArmPosition]["bottom"])
-    cv2.setTrackbarPos('Tilt', 'cargoArmSliders', cargoPositions[viewed_cargoArmPosition]["tilt"])
-    cv2.setTrackbarPos('Spine', 'cargoArmSliders', cargoPositions[viewed_cargoArmPosition]["spine"])
-def switchViewedCargoPosition(event, x, y, flags, param):
-    global button_down, viewed_cargoArmPosition, cargoArmPosition, cargoArmUpdated
-    global go_cargo_arm
-    if event==cv2.EVENT_LBUTTONDOWN:
-        if not button_down:
-            button_down = True
-
-            # bottom buttons
-            # apply to arm
-            if y > buttons_height:
-                if x < buttons_width // 2:
-                    cargoArmPosition = viewed_cargoArmPosition
-                    cargoArmUpdated = True
-                    #print("Applied position at index", armPosition, "to arm")
-                else:
-                    if not go_cargo_arm:
-                        go_cargo_arm = True
-                        print("Go cargo arm")
-                    else:
-                        go_cargo_arm = False
-                        print("Stop cargo arm")
-
-            # top buttons
-            else:
-                # previous
-                if x < buttons_width // 2:
-                    viewed_cargoArmPosition -= 1
-                    viewed_cargoArmPosition = wrap4(viewed_cargoArmPosition)
-        
-                # next
-                else:
-                    viewed_cargoArmPosition += 1
-                    viewed_cargoArmPosition = wrap4(viewed_cargoArmPosition)
-
-            updateCargoArmSliders()
-            updateCargoArmButtons()
-
-    elif event==cv2.EVENT_LBUTTONUP:
-        button_down = False
-
 # Canny Work
 contours = []
-'''
-def colorCannyStuff():
-    global contours
-    global ogframe
-    global threshold, dst # debugging
-    global votes # for decisions
-    #dst = cv2.GaussianBlur(mask, (9, 9), cv2.BORDER_DEFAULT)
-    #edges = cv2.Canny(mask, canny["minCannyThresh"], canny["maxCannyThresh"])
-    #_, threshold = cv2.threshold(edges, canny["minGrayThresh"], canny["maxGrayThresh"], cv2.THRESH_BINARY)
-    #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3, 3))
-    #dilated = cv2.dilate(edges, kernel)
-
-    #contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    #contours = contours[0] if imutils.is_cv2() else contours[1]
-    #contours = sorted(contours, key=lambda x: cv2.contourArea(x))
-
-    # go thru every contour
-    for i in range(len(contours)-1, -1, -1):
-        contour = contours[i]
-    
-        # here we are ignoring first counter because 
-        # findcontour function detects whole image as shape
-        #if i == 0:
-        #    i = 1
-        #    continue
-
-        # cv2.approxPloyDP() function to approximate the shape
-        approx = cv2.approxPolyDP(contour, epsilonCoeff * cv2.arcLength(contour, True), True)
-            
-        # method 2: finding center point of shape
-        (x, y, w, h) = cv2.boundingRect(contour)
-        center_x = int(x + w/2)
-        center_y = int(y + h/2)
-
-        widthRatio = w/ogframe.shape[1]
-        heightRatio = h/ogframe.shape[0]
-
-        if abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2 > canny["errorFromCenterX"]: #or abs(mask.shape[0]/2 - center_y) / mask.shape[0]/2 > canny["errorFromCenterY"]
-            # CAN GIVE ERRORS HERE:print("Needs to be near the center")
-            continue
-        #print(widthRatio, heightRatio)
-        if widthRatio < canny["minSizeRatio"] \
-            or heightRatio < canny["minSizeRatio"] \
-            or widthRatio > canny["maxSizeRatio"] \
-            or heightRatio > canny["maxSizeRatio"]: # DEBUGGING CODE: this is saying if the detected shape is larger than 30% of the entire frame in width then it's probably legit
-            # CAN GIVE ERRORS HERE:print("Outside size limitations")
-            continue
-
-        #print("Approx", len(approx))
-        if len(approx) <= 1 or len(approx) > 30:
-            continue
-
-        surface = cv2.contourArea(contour)
-
-        surface_percentage = surface/(w*h)
-        cv2.drawContours(ogframe, [contour], 0, (255, 255, 255), 2)
-            
-        #print(surface*100/(w*h))
-        if surface_percentage < 0.35:# CAN GIVE ERRORS HERE: if it's less than 0.35 then might ignore real ones if their color detection is too poor
-            continue
-
-        if not checkpixel_left_button_down:
-            print("surface_percentage", surface_percentage)
-
-        print(surface_percentage, surface_percentage<0.57, surface_percentage>=0.58)
-        if surface_percentage < 0.57:
-            votes["Triangles"] += 1
-            return
-
-        if surface_percentage >= 0.58 and surface_percentage < 0.80: # and not len(approx)==4
-            votes["Circles"] += 1
-            return
-
-        #print("width to height ratio", abs( 1 - float(w)/h ))
-        canny["rectangle_width_to_height_ratio"] = 0.3 # CAN GIVE ERRORS HERE: i'm hardcoding this
-        if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
-            votes["Squares"] += 1
-            return
-        else:
-            votes["Rectangles"] += 1
-            return
-
-        
-        #if len(approx) <= 3:
-        #    #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #    votes["Triangles"] += 1
-        #    return
-        #elif len(approx) <= 5: # i've found rectangles to sometimes hit 6 as amaximum but circles seem to always be more idk
-        #    # check if it's actually a triangle or not
-        ##    if surface < w*h*0.65:
-        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #        votes["Triangles"] += 1
-        #        return
-        #    
-        #    (_, _, w, h) = cv2.boundingRect(approx)
-        #    if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
-        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #        votes["Squares"] += 1
-        #        return
-        #    else:
-        #        #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        #        votes["Rectangles"] += 1
-        #        return
-        #elif len(approx) > 4:
-        #    #print("From x center", abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2)
-        ##    votes["Circles"] += 1
-        #    return
-'''
-            
-
-
-# HSV Work
-def colorStuff():
-    global contours
-    global ogframe # debugging
-    global mask
-    global votes # decision system
-    global ogframeHSV
-    # detect contours of pieces
-    for name, content in hsvs.items():
-
-        if content["range"]["max"] == [0, 0, 0]:
-            continue
-
-        # since red is the online color with two ranges, i just hardcoded it, also 6days left before comp anw
-        ogframeHSV = cv2.cvtColor(ogframe, cv2.COLOR_BGR2HSV)
-        if name == "Red2":
-            mask2 = cv2.inRange(ogframeHSV, tuple(content["range"]["min"]), tuple(content["range"]["max"]))
-            mask = cv2.bitwise_or(mask, mask2)
-        else:
-            mask = cv2.inRange(ogframeHSV, tuple(content["range"]["min"]), tuple(content["range"]["max"]) )
-
-        if name == "Red1":
-            continue
-        
-        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours = sorted(contours, key=lambda x: cv2.contourArea(x))
-        
-        if len(contours)>0:
-            (x, y, w, h) = cv2.boundingRect(contours[len(contours)-1])
-            x = int(x + w/2)
-            y = int(y + h/2)
-            center_x = int(x + w/2)
-            center_y = int(y + h/2)
-
-            colorContourWidthRatio = w/ogframe.shape[1]
-            colorContourHeightRatio = h/ogframe.shape[0]    
-            minColorContourWidthRatio = 0.2
-            minColorContourHeightRatio = 0.2
-
-            if colorContourWidthRatio < minColorContourWidthRatio \
-                and colorContourHeightRatio  < minColorContourHeightRatio:
-                # CAN GIVE ERRORS HERE:print("color blob needs to be big enuff")
-                continue
-            if abs(mask.shape[1]/2 - center_x) / mask.shape[1]/2 > canny["errorFromCenterX"]:
-                # CAN GIVE ERRORS HERE:print("color blob needs to be near center")
-                continue
-            
-            for contour in contours:
-                (x, y, w, h) = cv2.boundingRect(contours[len(contours)-1])
-                #cv2.drawContours(ogframe, [contour], 0, content["representation"], 2)
-            if name == "Red2":
-                votes["Red"] += 1
-            else:
-                votes[name] += 1
-            return True
-    return False
  
 # Vision: Inits
-emptyCannyImage = None
 def VisionInits():
-    global emptyCannyImage
-    cv2.namedWindow("output")
-    #cv2.setMouseCallback("output", checkPixel)
-
-    # HSV: Inits
-    '''
-    cv2.namedWindow("sliders")
-    cv2.setMouseCallback("sliders", switchColor)
-    cv2.createTrackbar('HMin', 'sliders', 0, 179, HMinChanged)
-    cv2.createTrackbar('SMin', 'sliders', 0, 255, SMinChanged)
-    cv2.createTrackbar('VMin', 'sliders', 0, 255, VMinChanged)
-    cv2.createTrackbar('HMax', 'sliders', 0, 179, HMaxChanged)
-    cv2.createTrackbar('SMax', 'sliders', 0, 255, SMaxChanged)
-    cv2.createTrackbar('VMax', 'sliders', 0, 255, VMaxChanged)
-    '''
-
     # Canny: Inits
-    try:
-        cv2.namedWindow("cannySliders") #, cv2.WINDOW_AUTOSIZE
-        emptyCannyImage = np.zeros((1, 300, 3), np.uint8)
-        cv2.imshow("cannySliders", emptyCannyImage)
-        cv2.createTrackbar("minCanny", "cannySliders", 0, 255, minCannyChanged)
-        cv2.createTrackbar("maxCanny", "cannySliders", 0, 255, maxCannyChanged)
-        cv2.createTrackbar("minsize", "cannySliders", 0, 100, minSizeChanged)
-        cv2.createTrackbar("maxsize", "cannySliders", 0, 100, maxSizeChanged)
-        cv2.createTrackbar("Gaussianblur", "cannySliders", 0, 15, gaussianBlurKernelSizeChanged)
-        cv2.createTrackbar("ErrorX", "cannySliders", 0, 100, errorFromCenterXChanged)
-        cv2.createTrackbar("ErrorY", "cannySliders", 0, 100, errorFromCenterYChanged)
-        cv2.createTrackbar("Dilation", "cannySliders", 0, 25, edgeDilationChanged)
-        cv2.createTrackbar("SigmaColor", "cannySliders", 0, 200, edgesigmaColorChanged)
-        cv2.createTrackbar("SigmaSpace", "cannySliders", 0, 200, edgeSigmaSpaceChanged)
-        cv2.createTrackbar("d", "cannySliders", 0, 30, edgeDChanged)
-    except Exception as e:
-        print("lol")
-        print(e)
-
-# Cargo: Inits
-def cargoArmInits():
-    # Arm: Inits
-    cv2.namedWindow("cargoArmSliders")
-    cv2.setMouseCallback("cargoArmSliders", switchViewedCargoPosition)
-    cv2.createTrackbar('Mouth', 'cargoArmSliders', 0, 100, cargoMouthChanged)
-    cv2.createTrackbar('Bottom', 'cargoArmSliders', 0, 100, cargoBottomChanged)
-    cv2.createTrackbar('Tilt', 'cargoArmSliders', 0, 100, cargoTiltChanged)
-    cv2.createTrackbar('Spine', 'cargoArmSliders', 0, 100, cargoSpineChanged)
+    cv2.namedWindow("cannySliders") #, cv2.WINDOW_AUTOSIZE
+    emptyCannyImage = np.zeros((1, 300, 3), np.uint8)
+    cv2.imshow("cannySliders", emptyCannyImage)
+    cv2.createTrackbar("minCanny", "cannySliders", 0, 255, minCannyChanged)
+    cv2.createTrackbar("maxCanny", "cannySliders", 0, 255, maxCannyChanged)
+    cv2.createTrackbar("minsize", "cannySliders", 0, 100, minSizeChanged)
+    cv2.createTrackbar("maxsize", "cannySliders", 0, 100, maxSizeChanged)
+    cv2.createTrackbar("Gaussianblur", "cannySliders", 0, 15, gaussianBlurKernelSizeChanged)
+    cv2.createTrackbar("ErrorX", "cannySliders", 0, 100, errorFromCenterXChanged)
+    cv2.createTrackbar("ErrorY", "cannySliders", 0, 100, errorFromCenterYChanged)
+    cv2.createTrackbar("Dilation", "cannySliders", 0, 25, edgeDilationChanged)
+    cv2.createTrackbar("SigmaColor", "cannySliders", 0, 200, edgesigmaColorChanged)
+    cv2.createTrackbar("SigmaSpace", "cannySliders", 0, 200, edgeSigmaSpaceChanged)
+    cv2.createTrackbar("d", "cannySliders", 0, 30, edgeDChanged)
 
 # Arm: Inits
 def ArmInits():
@@ -1199,6 +784,32 @@ def ArmInits():
     cv2.createTrackbar('Bottom', 'armSliders', 0, 100, bottomChanged)
     cv2.createTrackbar('Tilt', 'armSliders', 0, 100, tiltChanged)
     cv2.createTrackbar('Spine', 'armSliders', 0, 100, spineChanged)
+
+# Mode Selection: Inits
+def modeSelectionInits():
+    cv2.namedWindow("modeSelection")
+    cv2.setMouseCallback("modeSelection", switchModeClicked)
+    modeSelectionSwitchers = np.zeros((buttons_height, (buttons_width*7)//2, 3), np.uint8)
+    modeSelectionSwitchers[:, 0 : buttons_width//2] = (255, 255, 255) # (B, G, R)
+    modeSelectionSwitchers[:, buttons_width//2 : buttons_width] = (0, 0, 0)
+    
+    modeSelectionSwitchers[:, buttons_width : (buttons_width*3)//2] = (255, 255, 255) # (B, G, R)
+    modeSelectionSwitchers[:, (buttons_width*3)//2 : buttons_width*2] = (0, 0, 0)
+    
+    modeSelectionSwitchers[:, buttons_width*2 : (buttons_width*5)//2] = (255, 255, 255) # (B, G, R)
+    modeSelectionSwitchers[:, (buttons_width*5)//2 : buttons_width*3] = (0, 0, 0)
+    
+    modeSelectionSwitchers[:, buttons_width*3 : (buttons_width*7)//2] = (255, 255, 255) # (B, G, R)
+    #modeSelectionSwitchers[:, (buttons_width*7)//2 : buttons_width*4] = (0, 0, 0)
+
+    modeSelectionSwitchers = cv2.putText(modeSelectionSwitchers, "Vision", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), thickness, cv2.LINE_AA)
+    modeSelectionSwitchers = cv2.putText(modeSelectionSwitchers, "Arm", (10+buttons_width//2, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), thickness, cv2.LINE_AA)
+    modeSelectionSwitchers = cv2.putText(modeSelectionSwitchers, "Line", (10+buttons_width, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), thickness, cv2.LINE_AA)
+    modeSelectionSwitchers = cv2.putText(modeSelectionSwitchers, "Car", (10+(buttons_width*3)//2, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), thickness, cv2.LINE_AA)
+    modeSelectionSwitchers = cv2.putText(modeSelectionSwitchers, "Cargo", (10+buttons_width*2, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), thickness, cv2.LINE_AA)
+    modeSelectionSwitchers = cv2.putText(modeSelectionSwitchers, "NRF", (10+(buttons_width*5)//2, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), thickness, cv2.LINE_AA)
+    modeSelectionSwitchers = cv2.putText(modeSelectionSwitchers, "Unselected", (10+buttons_width*3, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), thickness, cv2.LINE_AA)
+    cv2.imshow("modeSelection", modeSelectionSwitchers)
 
 def updateCanny():
     try:
@@ -1220,37 +831,21 @@ def updateCanny():
 
 
 # Vision: Functions
-def hideWindows():
-    global windows_shown
-    if windows_shown:
-        windows_shown = False
-        if mode != "Arm":
-            cv2.destroyAllWindows()
 def showWindows():
-    global windows_shown
-    if not windows_shown:
-        windows_shown = True
-        VisionInits()
-        #updateSliders()
-        updateCanny()
-        #updateButtons()
-
-# Cargo: Functions
-def wrap4(index):
-    if index >= len(cargoPositions): ######len(armPositions[armShapes[viewed_armShapePosition]])
-        return 0
-    elif index < 0:
-        return len(cargoPositions)-1 ######len(armPositions[armShapes[viewed_armShapePosition]])-1
-    else:
-        return index
+    modeSelectionInits()
+    VisionInits()
+    updateCanny()
+    ArmInits()
+    updateArmSliders()
+    updateArmButtons()
 
 # Arm: Functions
 print("Wrap 2 is stopping before position index 6")
 def wrap2(index):
-    if index >= 6: ######len(armPositions[armShapes[viewed_armShapePosition]])
+    if index >= len(armPositions[armShapes[viewed_armShapePosition]]): ######len(armPositions[armShapes[viewed_armShapePosition]])
         return 0
     elif index < 0:
-        return 5 ######len(armPositions[armShapes[viewed_armShapePosition]])-1
+        return len(armPositions[armShapes[viewed_armShapePosition]])-1 ######len(armPositions[armShapes[viewed_armShapePosition]])-1
     else:
         return index
 def wrap3(index): # for different shapes
@@ -1262,7 +857,7 @@ def wrap3(index): # for different shapes
         return index
 def updateArmButtons():
     buttons = np.ones((buttons_height, buttons_width, 3), np.uint8)
-    # this entire coode here without spaces in between is to just color the buttons according to next and previous color for ease of use don't ask why
+    # this entire code here without spaces in between is to just color the buttons according to next and previous color for ease of use don't ask why
     previous_index = viewed_armPosition - 1
     next_index = viewed_armPosition + 1
     previous_index = wrap2(previous_index)
@@ -1286,43 +881,17 @@ def updateArmButtons():
     apply = cv2.putText(apply, "Apply", (35, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), thickness, cv2.LINE_AA)
     apply = cv2.putText(apply, "Go", (170, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), thickness, cv2.LINE_AA)
     
-    
+    '''    
     shapeSwitchers = np.zeros((buttons_height, buttons_width, 3), np.uint8)
     shapeSwitchers[:,0:buttons_width//2] = (255, 255, 255) # (B, G, R)
     shapeSwitchers[:,buttons_width//2:buttons_width] = (0, 0, 0)
     shapeSwitchers = cv2.putText(shapeSwitchers, armShapes[wrap3(viewed_armShapePosition-1)], (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), thickness, cv2.LINE_AA)
     shapeSwitchers = cv2.putText(shapeSwitchers, armShapes[wrap3(viewed_armShapePosition+1)], (170, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), thickness, cv2.LINE_AA)
     shapeSwitchers = cv2.putText(shapeSwitchers, armShapes[viewed_armShapePosition], (60, 17), cv2.FONT_HERSHEY_SIMPLEX, fontScale, (255, 0, 0), colorNameThickness, cv2.LINE_AA)
-    
-    numpy_vertical = np.vstack((buttons, apply, shapeSwitchers))
+    '''
+    numpy_vertical = np.vstack((buttons, apply)) #, shapeSwitchers
 
     cv2.imshow("armSliders", numpy_vertical)
-def hideArmWindows():
-    global arm_windows_shown
-    if arm_windows_shown:
-        arm_windows_shown = False
-        cv2.destroyAllWindows()
-def showArmWindows():
-    global arm_windows_shown
-    if not arm_windows_shown:
-        arm_windows_shown = True
-        ArmInits()
-        updateArmSliders()
-        updateArmButtons()
-
-
-def hideCargoArmWindows():
-    global cargo_arm_windows_shown
-    if cargo_arm_windows_shown:
-        cargo_arm_windows_shown = False
-        cv2.destroyAllWindows()
-def showCargoArmWindows():
-    global cargo_arm_windows_shown
-    if not cargo_arm_windows_shown:
-        cargo_arm_windows_shown = True
-        cargoArmInits()
-        updateCargoArmSliders()
-        updateCargoArmButtons()
 
 # Line Follower: Functions
 def resetLineFollower():
@@ -1341,7 +910,7 @@ def prepareLineFollower():
 def lineFollower():
     global period_start
     prepareLineFollower()
-    
+
     last_printed = None # debugging: printing values
     position = readSensors() # (use percentages) since pids have a sampling period, maybe read the sensors continously until period is over? and average all to have an accurate and reliable reading (use percentages)
 
@@ -1443,93 +1012,6 @@ def robotArm(Max):
         return armPosition < Max
     return True
 
-
-# Arm: Functions
-def checkCargoArmUpdatedManually():
-    global last_go_cargo_arm_execusion, cargoArmUpdated, cargoArmPosition, viewed_cargoArmPosition
-    global saved
-    # this is for debug mode with the menus only
-    #if not autoStartMode:
-    if cargoArmUpdated:
-        cargoArmUpdated = False
-        changed = go_to_coordinates(mode, viewed_cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
-                            MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
-                            MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
-                            MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
-        #if changed:
-        #    saved = False
-
-    
-                             
-    elif go_cargo_arm:
-        # this part is for testing arm sequences only (loop mode is on)
-        # first part of if statment is delay between position and another, second part is delay between a sequence and another
-        if time.time() - last_go_cargo_arm_execusion >= delay_between_arm_execusions or (time.time() - last_go_cargo_arm_execusion >= 2 and cargoArmPosition==0):
-            # Menu: just to update the menu we are seeing
-            if viewed_cargoArmPosition != cargoArmPosition:
-                viewed_cargoArmPosition = cargoArmPosition
-                updateCargoArmSliders()
-                updateCargoArmButtons()
-
-            changed = go_to_coordinates(mode, viewed_cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
-                                MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
-                                MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
-                                MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
-            #if changed:
-            #    saved = False
-
-            # wait between arm positions
-            last_go_cargo_arm_execusion = time.time()
-
-            # move to next arm position
-            cargoArmPosition += 1
-            cargoArmPosition = wrap4(cargoArmPosition)
-
-def cargoPass(Max):
-    global cargoArmPosition, last_go_cargo_arm_execusion
-    global saved
-
-    checkCargoArmUpdatedManually()
-
-    # this is for auto mode, execute the sequence once and then stop
-    #else:
-    if time.time() - last_go_cargo_arm_execusion >= delay_between_arm_execusions:
-        changed = go_to_coordinates(mode, cargoArmPosition, MSFromPercent(cargoPositions[cargoArmPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
-                            MSFromPercent(cargoPositions[cargoArmPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
-                            MSFromPercent(cargoPositions[cargoArmPosition]["tilt"], TILT_MIN, TILT_MAX), \
-                            MSFromPercent(cargoPositions[cargoArmPosition]["spine"], SPINE_MIN, SPINE_MAX))
-        #if changed:
-        #    saved = False
-        # wait between arm positions
-        last_go_cargo_arm_execusion = time.time()
-        cargoArmPosition += 1
-        return cargoArmPosition < Max
-    return True
-
-    
-
-# Vision: Functions
-#count = 0 # DEBUGGING: counting fps
-#start_of_second = time.time() # DEBUGGING: counting fps
-def detecting_shape():
-    #global count, start_of_second # DEBUGGING: counting fps
-    global cap, ogframe
-    ret, ogframe = cap.read()
-    #ogframetest = cv2.imread("imBGR.png")
-    if ret:
-        ''' # fps counter 
-        if time.time() - start_of_second > 1:
-            count = 0
-            start_of_second = time.time()
-        count += 1
-        print("Fps", count)
-        '''
-        detectedAColorMate = colorStuff()
-
-        # if color stuff did detect a color with a considerable appearance of a blob then move onto doing canny
-        if detectedAColorMate:
-            colorCannyStuff()
-
 # edge detection
 def edgeCannyStuff():
     global votes, ogframe, dilated, edges
@@ -1583,11 +1065,11 @@ def edgeCannyStuff():
             ogframe = cv2.rectangle(ogframe, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), (0, 255, 0), 1)
 
             # shape classification method
-            if surface_percentage >= 0.58 and surface_percentage < 0.82: # and not len(approx)==4
+            if surface_percentage >= 0.56 and surface_percentage < 0.82: # and not len(approx)==4
                 votes["Circles"] += 1
                 break
 
-            if surface_percentage < 0.57: 
+            if surface_percentage < 0.55: 
                 votes["Triangles"] += 1
                 break
             elif surface_percentage >= 0.82: #len(approx)==4 or 
@@ -1604,43 +1086,33 @@ def edgeCannyStuff():
 
 
 def edge_detecting_shape():
-    #global count, start_of_second # DEBUGGING: counting fps
     global cap, ogframe
     ret, ogframe = cap.read()
     #ogframetest = cv2.imread("imBGR.png")
     if ret:
-        ''' # fps counter 
-        if time.time() - start_of_second > 1:
-            count = 0
-            start_of_second = time.time()
-        count += 1
-        print("Fps", count)
-        '''
         edgeCannyStuff()
 
-# Cargo Pass: Vars
-cargo_pos_save_period = 10
-last_time_since_changed = time.time()
+motors_resetted = False
+x_center_of_img, y_center_of_img = [None, None]
 # Auto: Functions
-firstVisionPermissionRequested = False
 def autoThread():
-    global ogframe, cap
-    global last_time_since_changed # manual cargo pass
+    global motors_resetted # Unselected mode
+    global x_center_of_img, y_center_of_img
+    global ogframe, cap, edges, dilated
     global allowToPickUp, pickupRequest, detectedColor, detectedShape, carControlOn, shapes, mode
     global armPosition, last_go_arm_execusion # arm mode
-    global cargoArmPosition, cargo_pass_done, last_go_cargo_arm_execusion, receivedAnglesBoolean # cargo pass
+    global receivedAnglesBoolean # cargo pass
     global last_slider_update, saved
-    global visionPermissionRequested, firstVisionPermissionRequested
     global votes # decision system
 
     #mode = "Vision" # in auto mode, mode begins from vision
     print("AUTO: Vision mode") # always starts with vision
-    visionPermissionRequested = False
     firstVisionPermissionRequested = True
     while True:
         try:
-            #print("COMP DAY STUFF: APPROVE ALL REQUESTS")
-            # DISABLE ALL ALLOW PICKUPS HERE BY SETTING THE BOOLEANS DIRECTLY
+            if cv2.waitKey(1) == ord('q'):
+                break
+
             if firstVisionPermissionRequested: #ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
                 allowToPickUp = True
 
@@ -1654,15 +1126,8 @@ def autoThread():
                     saveVars()
 
             if mode == "Vision":
-                if not comp_day:
-                    hideArmWindows()
-                    hideCargoArmWindows()
-                    showWindows()
-        
                 resetLineFollower()
                 carControlOn = False
-                cargo_pass_done = False
-                #detecting_shape()
                 edge_detecting_shape()
                 if time.time() - votes["Start Of Vote"] > votes["Max Vote Period"]:
                     detectedShape, detectedColor = resolveVotes()
@@ -1679,55 +1144,39 @@ def autoThread():
 
                     if detectedShape == "Unknown":
                         continue
-
+ 
                     if detectedShape == "Circles" or detectedShape == "Rectangles":
                         continue
 
-                    #print("you're not picking up")
+                    print("you're not picking up")
                     #False and 
                     if firstVisionPermissionRequested:
-                        if not visionPermissionRequested:
-                            print("Vision: (DEBUG: permission to move onto arm sent)")
-                            visionPermissionRequested = True
-                            pickupRequest = True
-
-                        if allowToPickUp: # i requested 
-                            pickupRequest = True
-                            shapes = ogShapes
-                            mode = "Arm"
-                            print("AUTO: Arm mode (pickup request sent)")
+                        pickupRequest = True
+                        mode = "Arm"
+                        print("AUTO: Arm mode (pickup request sent)")
 
                 if not comp_day:
                     # DEBUGGING:
                     try:
                         # IMPORTANT-TOOLS: show these commented frames so u can tune the image
+                        if x_center_of_img == None:
+                            x_center_of_img, y_center_of_img = (int(ogframe.shape[1]/2), int(ogframe.shape[0]/2)) # x, y
+                        #cv2.circle(dilated, (x_center_of_img, y_center_of_img), 1, 255, 3)
+                        dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
                         #cv2.imshow('edges', edges)
+                        #dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
                         cv2.imshow('dilated', dilated)
-                        cv2.imshow('output', ogframe)
-                    except:
-                        pass
-
-                    if cv2.waitKey(1) == ord('q'):
-                        break
+                        #cv2.imshow('output', ogframe)
+                    except Exception as e:
+                        print(e)
 
             elif mode == "Arm":
-                if not comp_day:
-                    hideWindows()
-                    hideCargoArmWindows()
-                    showArmWindows()
-                    
                 resetLineFollower()
                 checkArmUpdatedManually()
                 carControlOn = False
-                cargo_pass_done = False
-                visionPermissionRequested = False
 
-                if allowToPickUp: ## and shapes > 0
+                if allowToPickUp:
                     allowToPickUp = False
-                    #shapes -= 1
-
-                    #detectedColor = "Unknown"
-                    #detectedShape = "Unknown"
 
                     # pickup loop
                     armPosition = 0
@@ -1771,32 +1220,15 @@ def autoThread():
                         break
 
             elif mode == "Car Control":
-                if not comp_day:
-                    hideWindows()
-                    hideCargoArmWindows()
-                    hideArmWindows()
                 carControl()
-                cargo_pass_done = False
-                visionPermissionRequested = False
 
             elif mode == "Line Follower":
-                if not comp_day:
-                    hideWindows()
-                    hideArmWindows()
                 carControlOn = False
-                cargo_pass_done = False
-                visionPermissionRequested = False
                 lineFollower()
 
             elif mode == "Cargo Pass":
-                if not comp_day:
-                    hideWindows()
-                    hideArmWindows()
-                    #showCargoArmWindows()
-                #checkCargoArmUpdatedManually()
                 resetLineFollower()
                 carControlOn = False
-                visionPermissionRequested = False
 
                 if receivedAnglesBoolean:
                     receivedAnglesBoolean = False
@@ -1804,68 +1236,29 @@ def autoThread():
                                         MSFromPercent(current_manual_cargo_positions["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                         MSFromPercent(current_manual_cargo_positions["tilt"], TILT_MIN, TILT_MAX), \
                                         MSFromPercent(current_manual_cargo_positions["spine"], SPINE_MIN, SPINE_MAX))
-                    #if changed:
-                    #    if time.time() - last_time_since_changed >= cargo_pos_save_period:
-                    #        print("saving cargo pos")
-                    #        last_time_since_changed = time.time()
-                    #        saved = False
-
-                '''
-                if not cargo_pass_done:
-                    if not pickupRequest:
-                        print("Cargo Pass: requesting permission to perform the maneuver")
-                        pickupRequest = True
-                    if allowToPickUp:
-                        allowToPickUp = False
-                        cargo_pass_done = True
-                        # pickup loop
-                        cargoArmPosition = 0
-                        last_go_cargo_arm_execusion = 0
-                        while cargoPass(len(cargoPositions)):
-                            pass
-
-                        # then re-execute the first position of the arm so it can return to point of start
-                        cargoArmPosition = 0
-                        while cargoPass(1):
-                            pass
-                        cargoArmPosition = 0 # then reset arm position
-                        turnOffArm() # DEBUG: then turn arm off
-                else:
-                    pickupRequest = True
-                    if allowToPickUp:
-                        mode = "NRF"
-                        allowToPickUp = False
-                        pickupRequest = False
-
-                if not comp_day:
-                    if cv2.waitKey(1) == ord('q'):
-                        break
-                '''
 
             elif mode == "NRF":
-                if not comp_day:
-                    hideWindows()
-                    hideArmWindows()
-                    hideCargoArmWindows()
                 resetLineFollower()
                 carControlOn = False
-                cargo_pass_done = False
-                visionPermissionRequested = False
                 sendNRFFinishMsg(pi)
 
-            '''
             elif mode == "Unselected":
-                shapes = ogShapes
-                #if not comp_day:
-                #    hideWindows()
-                #    hideArmWindows()
                 resetLineFollower()
                 carControlOn = False
-                cargo_pass_done = False
-                visionPermissionRequested = False
-            '''
+
+                if not motors_resetted:
+                    motors_resetted = True
+                    go_to_coordinates("Cargo Pass", 0, MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+                        MSFromPercent(armPositions["Squares"][0]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
+                        MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), \
+                        MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX), \
+                        shape="Squares")
+                    turnOffArm()
+
+            if mode != "Unselected":
+                motors_resetted = False
+
         except Exception as e:
-            print("lol")
             print("bruh", e)
 
 # Saving/Loading Work
@@ -1877,19 +1270,21 @@ except Exception as e:
     saveVars()
     print("First time launch, using defaultcolor ranges")
 
+showWindows()
+
 # HSV: select the first color mate
 for colorName, _ in hsvs.items():
     selectedColor = colorName
     break
 
 # init arm
-go_to_coordinates("Arm", 0, MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), \
+go_to_coordinates("Cargo Pass", 0, MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), \
     MSFromPercent(armPositions["Squares"][0]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
     MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), \
     MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX),
     shape="Squares")
-print("default poses", MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), MSFromPercent(armPositions["Squares"][0]["bottom"], BOTTOM_MIN, BOTTOM_MAX), MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX))
-print("default poses in percent", armPositions["Squares"][0]["mouth"], armPositions["Squares"][0]["bottom"], armPositions["Squares"][0]["tilt"], armPositions["Squares"][0]["spine"])
+#print("default poses", MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), MSFromPercent(armPositions["Squares"][0]["bottom"], BOTTOM_MIN, BOTTOM_MAX), MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX))
+#print("default poses in percent", armPositions["Squares"][0]["mouth"], armPositions["Squares"][0]["bottom"], armPositions["Squares"][0]["tilt"], armPositions["Squares"][0]["spine"])
 
 # Server: start server
 thread = Thread(target=server)
