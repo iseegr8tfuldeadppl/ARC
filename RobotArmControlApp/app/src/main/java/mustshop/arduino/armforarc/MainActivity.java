@@ -15,6 +15,8 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
@@ -326,9 +328,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
     void sendCommand(String url) {
         //log("sending " + url);
         Request request = new Request.Builder().url("http://" + robotIP + "/" + url).build();
+        String temp_turn_off_arm_request = turn_off_arm_request;
         if(url.equals("motion")){
             FormBody formBody = new FormBody.Builder()
-                    .add("angles", (Math.round(((float)bottom)*100/180)) + "," + (Math.round(((float)spine)*100/180)) + "," + (Math.round(((float)tilt)*100/180)) + "," + (Math.round(((float)mouth)*100/180)) + "," + (Math.round(((float)gate)*100/180)))
+                    .add("angles", (Math.round(((float)bottom))) + "," + (Math.round(((float)spine))) + "," + (Math.round(((float)tilt))) + "," + (Math.round(((float)mouth))) + "," + (Math.round(((float)gate))))
                     .add("turn_off_arm_request", turn_off_arm_request)
                     .build();
             log("turn_off_arm_request " + turn_off_arm_request);
@@ -338,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
                     .post(formBody)
                     .build();
 
-            log("sending " + (Math.round(((float)bottom)*100/180)) + "," + (Math.round(((float)spine)*100/180)) + "," + (Math.round(((float)tilt)*100/180)) + "," + (Math.round(((float)mouth)*100/180)) + "," + (Math.round(((float)gate)*100/180)));
+            log("sending " + (Math.round(((float)bottom))) + "," + (Math.round(((float)spine))) + "," + (Math.round(((float)tilt))) + "," + (Math.round(((float)mouth))) + "," + (Math.round(((float)gate))));
         } else if(url.equals("")){
             request = new Request.Builder()
                     .url("http://" + robotIP + "/" + url)
@@ -349,7 +352,21 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
         try {
             Response response = client.newCall(request).execute();
             if(response.isSuccessful()){
-                //log("response " + response.body().string());
+                    if(!url.equals("")){
+                        if(!temp_turn_off_arm_request.equals("0")){
+                            try {
+                                String msg = response.body().string();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            print("switched to " + msg);
+                                        } catch(Exception ignored){}
+                                    }
+                                });
+                            } catch(Exception ignored){}
+                        }
+                    }
 
                 // if sent msg was successful, check if our login indicator is saying disconnected just incase
                 setConnected(true);
@@ -384,11 +401,13 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
                 if(response.body()!=null){
                     String responseText = response.body().string();
                     String[] angles = responseText.split(",");
-                    bottom = Math.round(((float)Integer.parseInt(angles[0]))*100/180);
-                    spine = Math.round(((float)Integer.parseInt(angles[1]))*100/180);
-                    tilt = Math.round(((float)Integer.parseInt(angles[2]))*100/180);
-                    mouth = Math.round(((float)Integer.parseInt(angles[3]))*100/180);
+                    log("received bottom/spine/tilt/mouth " + angles);
+                    bottom = Math.round(((float)Integer.parseInt(angles[0])));
+                    spine = Math.round(((float)Integer.parseInt(angles[1])));
+                    tilt = Math.round(((float)Integer.parseInt(angles[2])));
+                    mouth = Math.round(((float)Integer.parseInt(angles[3])));
                     log("got " + bottom + " " + spine + " " + tilt + " " + mouth);
+                    log("converted to bottom/spine/tilt/mouth " + bottom + " " + spine + " " + tilt + " " + mouth);
 
                     handler.post(() -> {
                         bottomSeekbar.setProgress(bottom);
@@ -421,6 +440,10 @@ public class MainActivity extends AppCompatActivity implements CoordinateToBePla
         // if we reached this spot then probably a connectivity issue
         setConnected(false);
         loading = false;
+    }
+
+    private void print(Object log){
+        Toast.makeText(context, String.valueOf(log), Toast.LENGTH_SHORT).show();
     }
 
     private void setConnected(boolean b) {

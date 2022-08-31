@@ -6,8 +6,10 @@ reading_address = "readp" # 1SRVR
 writing_address = "writp" # 1CLNT
 
 nrf = None
+mode = None
 def sendNRFFinishMsg(pi):
     global nrf
+    global mode
     # bytearray([0x54, 0x43]).decode()
 
     # Create NRF24 object.
@@ -21,9 +23,10 @@ def sendNRFFinishMsg(pi):
 
     # Display the content of NRF24L01 device registers.
     #nrf.show_registers()
-
+ 
     # Enter a loop receiving data on the address specified.
-    while True:
+    print("mode", mode)
+    while mode == "NRF":
         try:
             nrf.reset_packages_lost()
             nrf.send(bytes("Finish", encoding='utf-8'))
@@ -46,5 +49,6 @@ def sendNRFFinishMsg(pi):
             # Sleep 1 ms.
             time.sleep(0.01) # 0.001
         except Exception as e:
+            print("ol")
             traceback.print_exc()
-            nrf.power_down()
+            #nrf.power_down()

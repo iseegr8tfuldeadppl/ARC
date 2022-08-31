@@ -491,6 +491,13 @@ def motion_feed():
     global current_manual_cargo_positions, receivedAnglesBoolean
     if request.method == 'GET':
         if current_manual_cargo_positions == None:
+            current_manual_cargo_positions = {
+                "mouth": armPositions["Squares"][0]["mouth"],
+                "bottom": armPositions["Squares"][0]["bottom"],
+                "tilt": armPositions["Squares"][0]["tilt"],
+                "spine": armPositions["Squares"][0]["spine"],
+            }
+
             print("was unable to return arm positions bcz it wasn't inited yet")
             return "OOF, arm positions not inited yet"
         else:
@@ -505,15 +512,15 @@ def motion_feed():
             "tilt": int(receivedAngles[2]),
             "spine": int(receivedAngles[1]),
         }
-        print(donrf)
+        print(donrf)  
         if donrf == "1":
             print("SWITCHING MODE TO NRF")
             mode = "NRF"
         elif donrf == "2":
             print("SWITCHING MODE TO Cargo")
             mode = "Cargo Pass"
-        print(current_manual_cargo_positions)
-        return "Gucci"
+        print("received", current_manual_cargo_positions)
+        return "Switched to " + str(mode)
 
 current_manual_cargo_positions = None
 @app.route('/mode', methods=["GET", "POST"])
@@ -531,10 +538,10 @@ def mode_feed():
             cargo_pass_done = False
             
             current_manual_cargo_positions = {
-                "mouth": percentFromMS(CURRENT_MOUTH, MOUTH_MIN, MOUTH_MAX),
-                "bottom": percentFromMS(CURRENT_BOTTOM, BOTTOM_MIN, BOTTOM_MAX),
-                "tilt": percentFromMS(CURRENT_TILT, TILT_MIN, TILT_MAX),
-                "spine": percentFromMS(CURRENT_SPINE, SPINE_MIN, SPINE_MAX),
+                "mouth": armPositions["Squares"][0]["mouth"],
+                "bottom": armPositions["Squares"][0]["bottom"],
+                "tilt": armPositions["Squares"][0]["tilt"],
+                "spine": armPositions["Squares"][0]["spine"],
             }
 
         #if autoStartMode:
@@ -547,7 +554,7 @@ def mode_feed():
 
         mode = tempMode
         print("Received a mode update:", tempMode)
-        return "Thanksbozo"
+        return mode
     return "Unknowncommandbozo"
 
 @app.route('/car', methods=["GET", "POST"])
@@ -609,12 +616,12 @@ def loadVars():
         All = pickle.load(f)
         #if All.get("current_manual_cargo_positions") != None:
         #    current_manual_cargo_positions = All["current_manual_cargo_positions"]
-        if All.get("currentarm") is not None:
-            currentarm = All["currentarm"]
-            CURRENT_MOUTH = currentarm["CURRENT_MOUTH"]
-            CURRENT_SPINE = currentarm["CURRENT_SPINE"]
-            CURRENT_TILT = currentarm["CURRENT_TILT"]
-            CURRENT_BOTTOM = currentarm["CURRENT_BOTTOM"]
+        #if All.get("currentarm") is not None:
+        #    currentarm = All["currentarm"]
+        #    CURRENT_MOUTH = currentarm["CURRENT_MOUTH"]
+        #    CURRENT_SPINE = currentarm["CURRENT_SPINE"]
+        #    CURRENT_TILT = currentarm["CURRENT_TILT"]
+        #    CURRENT_BOTTOM = currentarm["CURRENT_BOTTOM"]
         if All.get("hsvs") is not None:
             hsvs = All["hsvs"]
         print("FORDEBUGG: you're not pulling canny")
@@ -1881,6 +1888,8 @@ go_to_coordinates("Arm", 0, MSFromPercent(armPositions["Squares"][0]["mouth"], M
     MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), \
     MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX),
     shape="Squares")
+print("default poses", MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), MSFromPercent(armPositions["Squares"][0]["bottom"], BOTTOM_MIN, BOTTOM_MAX), MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX))
+print("default poses in percent", armPositions["Squares"][0]["mouth"], armPositions["Squares"][0]["bottom"], armPositions["Squares"][0]["tilt"], armPositions["Squares"][0]["spine"])
 
 # Server: start server
 thread = Thread(target=server)

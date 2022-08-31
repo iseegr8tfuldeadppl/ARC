@@ -206,7 +206,7 @@
                         android:textColor="#FD792E"
                         android:text="90" />
                     <SeekBar
-                        android:max="180"
+                        android:max="100"
                         android:id="@+id/bottomSeekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -248,7 +248,7 @@
                         android:textColor="#FD792E"
                         android:text="90" />
                     <SeekBar
-                        android:max="180"
+                        android:max="100"
                         android:id="@+id/spineSeekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -290,7 +290,7 @@
                         android:textColor="#FD792E"
                         android:text="90" />
                     <SeekBar
-                        android:max="180"
+                        android:max="100"
                         android:id="@+id/tiltSeekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -333,7 +333,7 @@
                         android:textColor="#FD792E"
                         android:text="90" />
                     <SeekBar
-                        android:max="180"
+                        android:max="100"
                         android:id="@+id/mouthSeekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
@@ -376,7 +376,7 @@
                         android:textColor="#FD792E"
                         android:text="90" />
                     <SeekBar
-                        android:max="180"
+                        android:max="100"
                         android:id="@+id/gateSeekbar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
