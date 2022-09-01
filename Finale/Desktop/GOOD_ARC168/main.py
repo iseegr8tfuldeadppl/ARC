@@ -168,49 +168,6 @@ def MSFromPercent(percent, Min, Max):
     else:
         return int((Max-Min)*(percent/100) + Min)
 
-# Cargo: Arrays
-cargoPositions = [{ # initial arm stance
-        "mouth": 33,
-        "bottom": 50,
-        "tilt": 37,
-        "spine": 33
-    },
-    { # go right above the shape or so
-        "mouth": 25,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # get to cupping the shape
-        "mouth": 53,
-        "bottom": 45,
-        "tilt": 0,
-        "spine": 88
-    },
-    { # close mouth
-        "mouth": 52,
-        "bottom": 45,
-        "tilt": 38,
-        "spine": 37
-    },
-    { # initial arm stance again
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # turn around to cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    },
-    { # let go into cargo
-        "mouth": percentFromMS(MOUTH_REST, MOUTH_MIN, MOUTH_MAX),
-        "bottom": percentFromMS(BOTTOM_REST, BOTTOM_MIN, BOTTOM_MAX),
-        "tilt": percentFromMS(TILT_REST, TILT_MIN, TILT_MAX),
-        "spine": percentFromMS(SPINE_REST, SPINE_MIN, SPINE_MAX)
-    }]
 
 # Arm: Arrays
 squarePositions = [{ # initial arm stance
@@ -266,8 +223,6 @@ thickness = 1
 colorNameThickness = 2
 
 # Auto Thread: Vars
-ogShapes = 1
-shapes = ogShapes
 allowToPickUp = False
 detectedColor = "Unknown"
 detectedShape = "Unknown"
@@ -277,6 +232,8 @@ comp_day = False
 print("comp_day is", comp_day)
 
 # Vision: Vars
+total_shapes_to_pickup = 13
+current_shapes_count = 0
 cap = cv2.VideoCapture(0)
 #print(cap.get(cv2.CAP_PROP_CONTRAST))
 #print(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -437,7 +394,7 @@ def car_feed():
 def pickup_feed():
     global allowToPickUp, pickupRequest
     if request.method == 'GET':
-        return str(str(shapes) + ":" + str(pickupRequest) + ":" + str(detectedShape) + ":" + str(detectedColor) + ":" + str(mode))
+        return str(str(0) + ":" + str(pickupRequest) + ":" + str(detectedShape) + ":" + str(detectedColor) + ":" + str(mode))
     elif request.method == 'POST':
         allowToPickUp = True
         pickupRequest = False
@@ -471,11 +428,10 @@ def server():
 # Saving functions
 def saveVars():
     with open(filename, 'wb') as f:
-        #"hsvs": hsvs, "cargoPositions": cargoPositions, "currentarm": {"CURRENT_MOUTH": CURRENT_MOUTH, "CURRENT_SPINE": CURRENT_SPINE, "CURRENT_TILT": CURRENT_TILT, "CURRENT_BOTTOM": CURRENT_BOTTOM}
         pickle.dump({"canny": canny, "armPositions": armPositions}, f) #, "current_manual_cargo_positions": current_manual_cargo_positions
         #print("Successfully saved")
 def loadVars():
-    global hsvs, canny, armPositions, cargoPositions, current_manual_cargo_positions
+    global hsvs, canny, armPositions, current_manual_cargo_positions
     global CURRENT_MOUTH, CURRENT_SPINE, CURRENT_TILT, CURRENT_BOTTOM
     with open(filename, 'rb') as f:
         All = pickle.load(f)
@@ -616,24 +572,6 @@ def edgeSigmaSpaceChanged(x):
 def edgeDChanged(x):
     global canny
     canny["pixel_neighborhood_diameter"] = x
-    notifySave()
-
-# Cargo: Functions
-def cargoMouthChanged(x):
-    global cargoPositions
-    cargoPositions[viewed_cargoArmPosition]["mouth"] = x
-    notifySave()
-def cargoBottomChanged(x):
-    global cargoPositions
-    cargoPositions[viewed_cargoArmPosition]["bottom"] = x
-    notifySave()
-def cargoTiltChanged(x):
-    global cargoPositions
-    cargoPositions[viewed_cargoArmPosition]["tilt"] = x
-    notifySave()
-def cargoSpineChanged(x):
-    global cargoPositions
-    cargoPositions[viewed_cargoArmPosition]["spine"] = x
     notifySave()
 
 # Arm: Functions
@@ -1106,10 +1044,11 @@ motors_resetted = False
 x_center_of_img, y_center_of_img = [None, None]
 # Auto: Functions
 def autoThread():
+    global current_shapes_count # automatic switch from vision to line follower
     global motors_resetted # Unselected mode
     global x_center_of_img, y_center_of_img
     global ogframe, cap, edges, dilated
-    global allowToPickUp, pickupRequest, detectedColor, detectedShape, carControlOn, shapes, mode
+    global allowToPickUp, pickupRequest, detectedColor, detectedShape, carControlOn, mode
     global armPosition, last_go_arm_execusion # arm mode
     global receivedAnglesBoolean # cargo pass
     global last_slider_update, saved
@@ -1117,16 +1056,11 @@ def autoThread():
 
     #mode = "Vision" # in auto mode, mode begins from vision
     print("AUTO: Vision mode") # always starts with vision
-    firstVisionPermissionRequested = True
     while True:
         try:
             if cv2.waitKey(1) == ord('q'):
                 break
 
-            if firstVisionPermissionRequested: #ONLY ALLOW PICKUP AUTOMATICALLY AFTER THE VERY VERY FIRST LAUNCH ALLOWANCE
-                allowToPickUp = True
-
-            #if not comp_day:
             # save to pickle file
             if not saved:
                 if time.time() - last_slider_update >= update_delay:
@@ -1144,26 +1078,31 @@ def autoThread():
                     print("detections", detectedShape, detectedColor)
                     votes = resetVotes()
 
-                    if not firstVisionPermissionRequested:
-                        if allowToPickUp:
-                            firstVisionPermissionRequested = True
-                        else:
-                            if not pickupRequest:
-                                print("Vision: (DEBUG: permission to start vision sent)")
-                                pickupRequest = True
-
+                    evaluate_detection = True
                     if detectedShape == "Unknown":
-                        continue
+                        evaluate_detection = False
  
-                    if detectedShape == "Circles" or detectedShape == "Rectangles":
-                        continue
+                    # count shapes
+                    count_the_shapes = True
+                    if count_the_shapes:
+                        print("I WILL SWITCH TO LINE FOLLOWER AUTOMATICALLY SOON OR NOW, SHAPES: " + str(current_shapes_count) + "/" + str(total_shapes_to_pickup))
+                        current_shapes_count += 1
 
-                    print("you're not picking up")
-                    #False and 
-                    if firstVisionPermissionRequested:
+                    if detectedShape == "Circles" or detectedShape == "Rectangles":
+                        evaluate_detection = False
+
+                    #if False: 
+                    #   print("you're not picking up")
+                    if evaluate_detection:
                         pickupRequest = True
-                        mode = "Arm"
-                        print("AUTO: Arm mode (pickup request sent)")
+
+                        if current_shapes_count >= total_shapes_to_pickup:
+                            current_shapes_count = 0
+                            mode = "Line Follower"
+                            print("AUTO: Line Follower mode (pickup request sent)")
+                        else:
+                            mode = "Arm"
+                            print("AUTO: Arm mode (pickup request sent)")
 
                 if not comp_day:
                     # DEBUGGING:
@@ -1185,6 +1124,7 @@ def autoThread():
                 checkArmUpdatedManually()
                 carControlOn = False
 
+                allowToPickUp = True
                 if allowToPickUp:
                     allowToPickUp = False
 
@@ -1213,15 +1153,6 @@ def autoThread():
                         print("AUTO: Vision mode")
                         votes = resetVotes()
                         # after pickup, either send us back to vision or move on to next step
-                        '''
-                        if shapes <= 0:
-                            print("Ran outta shapes")
-                            mode = "Car Control"
-                            print("AUTO: Car Control mode")
-                        else:
-                            mode = "Vision"
-                            print("AUTO: Vision mode")
-                        '''
                     else:
                         checkArmUpdatedManually()
 
