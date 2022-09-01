@@ -968,8 +968,6 @@ def edgeCannyStuff():
 
     contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
-    #empty = np.zeros((ogframe.shape[0], ogframe.shape[1]), np.uint8)
-
     for i in range(len(contours)-1, -1, -1):
         
         (x, y, w, h) = cv2.boundingRect(contours[i])
@@ -1054,6 +1052,8 @@ def autoThread():
     global last_slider_update, saved
     global votes # decision system
 
+    lining = False # line follower
+
     #mode = "Vision" # in auto mode, mode begins from vision
     print("AUTO: Vision mode") # always starts with vision
     while True:
@@ -1108,14 +1108,17 @@ def autoThread():
                     # DEBUGGING:
                     try:
                         # IMPORTANT-TOOLS: show these commented frames so u can tune the image
-                        if x_center_of_img == None:
-                            x_center_of_img, y_center_of_img = (int(ogframe.shape[1]/2), int(ogframe.shape[0]/2)) # x, y
-                        #cv2.circle(dilated, (x_center_of_img, y_center_of_img), 1, 255, 3)
-                        dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
-                        #cv2.imshow('edges', edges)
-                        #dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
-                        cv2.imshow('dilated', dilated)
-                        #cv2.imshow('output', ogframe)
+                        if ogframe is not None:
+                            if x_center_of_img == None:
+                                x_center_of_img, y_center_of_img = (int(ogframe.shape[1]/2), int(ogframe.shape[0]/2)) # x, y
+                            #cv2.circle(dilated, (x_center_of_img, y_center_of_img), 1, 255, 3)
+                            dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
+                            #cv2.imshow('edges', edges)
+                            #dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
+                            cv2.imshow('dilated', dilated)
+                            #cv2.imshow('output', ogframe)
+                        else:
+                            print("ogframe is None")
                     except Exception as e:
                         print(e)
 
@@ -1166,6 +1169,11 @@ def autoThread():
             elif mode == "Line Follower":
                 carControlOn = False
                 lineFollower()
+                if not lining:
+                    lining = True
+                    turnOffArm() # DEBUG: then turn arm off
+
+                
 
             elif mode == "Cargo Pass":
                 resetLineFollower()
@@ -1199,20 +1207,26 @@ def autoThread():
                 # show me what vision is doing without a voting system
                 try:
                     edge_detecting_shape()
-                    # IMPORTANT-TOOLS: show these commented frames so u can tune the image
-                    if x_center_of_img == None:
-                        x_center_of_img, y_center_of_img = (int(ogframe.shape[1]/2), int(ogframe.shape[0]/2)) # x, y
-                    #cv2.circle(dilated, (x_center_of_img, y_center_of_img), 1, 255, 3)
-                    dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
-                    #cv2.imshow('edges', edges)
-                    #dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
-                    cv2.imshow('dilated', dilated)
-                    #cv2.imshow('output', ogframe)
+                    if ogframe is not None:
+                        # IMPORTANT-TOOLS: show these commented frames so u can tune the image
+                        if x_center_of_img == None:
+                            x_center_of_img, y_center_of_img = (int(ogframe.shape[1]/2), int(ogframe.shape[0]/2)) # x, y
+                        #cv2.circle(dilated, (x_center_of_img, y_center_of_img), 1, 255, 3)
+                        dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
+                        #cv2.imshow('edges', edges)
+                        #dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
+                        cv2.imshow('dilated', dilated)
+                        #cv2.imshow('output', ogframe)
+                    else:
+                        print("ogframe is None")
                 except Exception as e:
                     print(e)
 
             if mode != "Unselected":
                 motors_resetted = False
+
+            if mode != "Line Follower":
+                lining = False
 
         except Exception as e:
             print("bruh", e)
@@ -1239,6 +1253,7 @@ go_to_coordinates("Cargo Pass", 0, MSFromPercent(armPositions["Squares"][0]["mou
     MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), \
     MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX),
     shape="Squares")
+turnOffArm()
 #print("default poses", MSFromPercent(armPositions["Squares"][0]["mouth"], MOUTH_MIN, MOUTH_MAX), MSFromPercent(armPositions["Squares"][0]["bottom"], BOTTOM_MIN, BOTTOM_MAX), MSFromPercent(armPositions["Squares"][0]["tilt"], TILT_MIN, TILT_MAX), MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX))
 #print("default poses in percent", armPositions["Squares"][0]["mouth"], armPositions["Squares"][0]["bottom"], armPositions["Squares"][0]["tilt"], armPositions["Squares"][0]["spine"])
 
