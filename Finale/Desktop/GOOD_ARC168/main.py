@@ -70,11 +70,11 @@ canny = {
     "countours_to_display": 7,
     "minGrayThresh": 127, #195
     "maxGrayThresh": 255, #255
-    "minCannyThresh": 46, # 13
-    "maxCannyThresh": 47, # 13
+    "minCannyThresh": 20, # 13
+    "maxCannyThresh": 39, # 13
     "gaussianBlurKernelSize": 5,
     "errorFromCenterX": 0.2,
-    "errorFromCenterY": 0.2,
+    "errorFromCenterY": 0.15,
 
     "dilation": 6,
     "sigmaColor": 80,
@@ -98,7 +98,7 @@ def resetVotes():
         "Yellow": 0,
         "Orange": 0,
         "Start Of Vote": time.time(),
-        "Max Vote Period": 5 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
+        "Max Vote Period": 7 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
     }
 
 def resolveVotes():
@@ -119,8 +119,8 @@ def resolveVotes():
         shape_most_votes = votes["Triangles"]
         shape_with_most_votes = "Triangles"
 
-    minimum_vote_requirement = 7
-    if shape_most_votes <= 3:
+    minimum_vote_requirement = 3
+    if shape_most_votes <= minimum_vote_requirement:
         print("sadly less than", minimum_vote_requirement, "minimum vote requirement with", shape_most_votes, "votes")
         shape_with_most_votes = "Unknown"
     else:
@@ -348,7 +348,7 @@ log.setLevel(logging.ERROR)
 def index():
     return "Bozo"
 
-mode = "Vision" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
+mode = "Unselected" # modes: Vision, Line Follower, Arm, Car Control, Cargo Pass, NRF & Unselected
 print("Initial mode is", mode, "btw")
 receivedAnglesBoolean = False 
 @app.route('/motion', methods=["GET", "POST"])
@@ -393,6 +393,7 @@ current_manual_cargo_positions = None
 def mode_feed():
     global mode, detectedColor, detectedShape, allowToPickUp, pickupRequest
     global current_manual_cargo_positions # cargo pass
+    global votes # vision
     if request.method == 'GET':
         return str(mode)
     elif request.method == 'POST':
@@ -409,8 +410,11 @@ def mode_feed():
                 "spine": armPositions["Squares"][0]["spine"],
             }
 
+        elif tempMode == "Vision":
+            votes = resetVotes()
+
         #if autoStartMode:
-        if tempMode == "Arm":
+        elif tempMode == "Arm":
             detectedShape = "Unknown"
 
         mode = tempMode
@@ -478,9 +482,9 @@ def loadVars():
         #if All.get("current_manual_cargo_positions") != None:
         #    current_manual_cargo_positions = All["current_manual_cargo_positions"]
         print("FORDEBUGG: you're not pulling canny")
-        #if All.get("canny") is not None:
-        #    canny = All["canny"]
-        #print("FORDEBUGG: you're not pulling positions")
+        if All.get("canny") is not None:
+            canny = All["canny"]
+        print("FORDEBUGG: you're not pulling positions")
         if All.get("armPositions") is not None:
             armPositions["Squares"] = All["armPositions"]["Squares"]
             armPositions["Triangles"] = All["armPositions"]["Squares"]
@@ -665,6 +669,7 @@ def switchModeClicked(event, x, y, flags, param):
     global mode # mode switching
     global current_manual_cargo_positions # cargo pass
     global detectedShape # arm mode
+    global votes # vision
 
     if event==cv2.EVENT_LBUTTONDOWN:
         if not modeClickedButtonDown:
@@ -674,6 +679,7 @@ def switchModeClicked(event, x, y, flags, param):
             # left shape in list
             # we have a different arm course of positions for different shapes
             if x < buttons_width//2:
+                votes = resetVotes()
                 mode = "Vision"
             elif x < buttons_width:
                 detectedShape = "Unknown"
@@ -1066,24 +1072,28 @@ def edgeCannyStuff():
 
             # shape classification method
             if surface_percentage >= 0.56 and surface_percentage < 0.82: # and not len(approx)==4
-                votes["Circles"] += 1
+                if mode != "Unselected":
+                    votes["Circles"] += 1
                 break
 
-            if surface_percentage < 0.55: 
-                votes["Triangles"] += 1
+            if 0.35 < surface_percentage and surface_percentage < 0.55: 
+                if mode != "Unselected":
+                    votes["Triangles"] += 1
                 break
             elif surface_percentage >= 0.82: #len(approx)==4 or 
                 #print("width to height ratio", abs( 1 - float(w)/h ))
                 canny["rectangle_width_to_height_ratio"] = 0.3 # CAN GIVE ERRORS HERE: i'm hardcoding this
                 if  abs( 1 - float(w)/h ) < canny["rectangle_width_to_height_ratio"]: # DEBUGGING CODE: 0.1 here means if the width is maximally 10% longer or shorter than height then it's probably a square not a rectangle 
-                    votes["Squares"] += 1
+                    if mode != "Unselected":
+                        votes["Squares"] += 1
                     break
                 else:
-                    votes["Rectangles"] += 1
+                    if mode != "Unselected":
+                        votes["Rectangles"] += 1
                     break
                 break
 
-
+ 
 
 def edge_detecting_shape():
     global cap, ogframe
@@ -1254,6 +1264,21 @@ def autoThread():
                         MSFromPercent(armPositions["Squares"][0]["spine"], SPINE_MIN, SPINE_MAX), \
                         shape="Squares")
                     turnOffArm()
+
+                # show me what vision is doing without a voting system
+                try:
+                    edge_detecting_shape()
+                    # IMPORTANT-TOOLS: show these commented frames so u can tune the image
+                    if x_center_of_img == None:
+                        x_center_of_img, y_center_of_img = (int(ogframe.shape[1]/2), int(ogframe.shape[0]/2)) # x, y
+                    #cv2.circle(dilated, (x_center_of_img, y_center_of_img), 1, 255, 3)
+                    dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
+                    #cv2.imshow('edges', edges)
+                    #dilated = cv2.rectangle(dilated, (int(x_center_of_img-x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img-y_center_of_img*canny["errorFromCenterY"])), (int(x_center_of_img+x_center_of_img*canny["errorFromCenterX"]), int(y_center_of_img+y_center_of_img*canny["errorFromCenterY"])), 255, 1)
+                    cv2.imshow('dilated', dilated)
+                    #cv2.imshow('output', ogframe)
+                except Exception as e:
+                    print(e)
 
             if mode != "Unselected":
                 motors_resetted = False

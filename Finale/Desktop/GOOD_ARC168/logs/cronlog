@@ -1,0 +1,7 @@
+you're defaulting square pickup method as the universal pickup
+Traceback (most recent call last):
+  File "/home/pi/Desktop/GOOD_ARC168/main.py", line 11, in <module>
+    from nrfstuff import *
+  File "/home/pi/Desktop/GOOD_ARC168/nrfstuff.py", line 2, in <module>
+    from nrf24 import *
+ModuleNotFoundError: No module named 'nrf24'

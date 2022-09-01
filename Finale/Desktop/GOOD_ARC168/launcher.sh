@@ -6,7 +6,6 @@
 # https://www.instructables.com/Raspberry-Pi-Launch-Python-script-on-startup/
 
 cd /
-cd home/pi/Desktop/
+cd home/pi/Desktop/GOOD_ARC168/
 sudo pigpiod
-sudo python gbase.py
-cd /
+python gbase.py
