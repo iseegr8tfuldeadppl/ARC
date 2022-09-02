@@ -66,6 +66,8 @@ hsvs = { # https://stackoverflow.com/questions/10948589/choosing-the-correct-upp
 canny = {
     "minSizeRatio": 0.2,
     "maxSizeRatio": 0.9,
+    "minSizeRatioY": 0.2,
+    "maxSizeRatioY": .95,
     "rectangle_width_to_height_ratio": 0.3,
     "countours_to_display": 7,
     "minGrayThresh": 127, #195
@@ -73,7 +75,7 @@ canny = {
     "minCannyThresh": 20, # 13
     "maxCannyThresh": 39, # 13
     "gaussianBlurKernelSize": 5,
-    "errorFromCenterX": 0.2,
+    "errorFromCenterX": 0.3,
     "errorFromCenterY": 0.15,
 
     "dilation": 6,
@@ -98,7 +100,7 @@ def resetVotes():
         "Yellow": 0,
         "Orange": 0,
         "Start Of Vote": time.time(),
-        "Max Vote Period": 7 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
+        "Max Vote Period": 5 # # CAN GIVE ERRORS HERE: comments: it used to be 2 seconds of voting
     }
 
 def resolveVotes():
@@ -183,30 +185,54 @@ squarePositions = [{ # initial arm stance
         "spine": 65
     },
     { # get to cupping the shape
-        "mouth": 0,
+        "mouth": 5,
         "bottom": 92,
         "tilt": 6,
         "spine": 92
     },
     { # close mouth
-        "mouth": 60,
+        "mouth": 100,
         "bottom": 92,
         "tilt": 6,
         "spine": 92
     },
     { # get back up
-        "mouth": 60,
+        "mouth": 100,
         "bottom": 92,
         "tilt": 100,
         "spine": 49
     },
     { # turn around
-        "mouth": 60,
+        "mouth": 100,
         "bottom": 0,
         "tilt": 100,
         "spine": 49
     },
     { # let go
+        "mouth": 0,
+        "bottom": 0,
+        "tilt": 100,
+        "spine": 49
+    },
+    { # dispursion: move away a bit
+        "mouth": 20,
+        "bottom": 20,
+        "tilt": 100,
+        "spine": 19
+    },
+    { # dispursion: get in behind the shapes
+        "mouth": 20,
+        "bottom": 0,
+        "tilt": 100,
+        "spine": 19
+    },
+    { # dispursion: push forward
+        "mouth": 20,
+        "bottom": 0,
+        "tilt": 72,
+        "spine": 48
+    },
+    { # move above everything soit doesn't hit the cargo while resetting
         "mouth": 0,
         "bottom": 0,
         "tilt": 100,
@@ -232,8 +258,10 @@ comp_day = False
 print("comp_day is", comp_day)
 
 # Vision: Vars
-total_shapes_to_pickup = 13
+total_shapes_to_pickup = 8
 current_shapes_count = 0
+squares = 0
+triangles = 0
 cap = cv2.VideoCapture(0)
 #print(cap.get(cv2.CAP_PROP_CONTRAST))
 #print(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -248,8 +276,6 @@ cap = cv2.VideoCapture(0)
 viewed_cargoArmPosition = 0
 cargoArmPosition = 0
 cargoArmUpdated = False
-go_cargo_arm = False
-last_go_cargo_arm_execusion = 0
 
 # Arm: Vars
 last_go_arm_execusion = 0
@@ -441,9 +467,9 @@ def loadVars():
         if All.get("canny") is not None:
             canny = All["canny"]
         print("FORDEBUGG: you're not pulling positions")
-        if All.get("armPositions") is not None:
-            armPositions["Squares"] = All["armPositions"]["Squares"]
-            armPositions["Triangles"] = All["armPositions"]["Squares"]
+        #if All.get("armPositions") is not None:
+        #    armPositions["Squares"] = All["armPositions"]["Squares"]
+        #    armPositions["Triangles"] = All["armPositions"]["Squares"]
 def notifySave():
     global saved, last_slider_update
     saved = False
@@ -607,7 +633,7 @@ def switchModeClicked(event, x, y, flags, param):
     global mode # mode switching
     global current_manual_cargo_positions # cargo pass
     global detectedShape # arm mode
-    global votes # vision
+    global votes, current_shapes_count, squares, triangles # vision
 
     if event==cv2.EVENT_LBUTTONDOWN:
         if not modeClickedButtonDown:
@@ -617,6 +643,10 @@ def switchModeClicked(event, x, y, flags, param):
             # left shape in list
             # we have a different arm course of positions for different shapes
             if x < buttons_width//2:
+                current_shapes_count = 0
+                squares = 0
+                triangles = 0
+                print("I RESETTED COUNT, SHAPES: " + str(current_shapes_count) + "/" + str(total_shapes_to_pickup))
                 votes = resetVotes()
                 mode = "Vision"
             elif x < buttons_width:
@@ -756,22 +786,18 @@ def modeSelectionInits():
     cv2.imshow("modeSelection", modeSelectionSwitchers)
 
 def updateCanny():
-    try:
-        cv2.setTrackbarPos('minCanny','cannySliders', canny["minCannyThresh"])
-        cv2.setTrackbarPos('maxCanny','cannySliders', canny["maxCannyThresh"])
-        cv2.setTrackbarPos('Gaussianblur','cannySliders', canny["gaussianBlurKernelSize"])
-        cv2.setTrackbarPos('minsize','cannySliders', int(canny["minSizeRatio"]*100))
-        cv2.setTrackbarPos('maxsize','cannySliders', int(canny["maxSizeRatio"]*100))
-        cv2.setTrackbarPos('ErrorX','cannySliders', int(canny["errorFromCenterX"]*100))
-        cv2.setTrackbarPos('ErrorY','cannySliders', int(canny["errorFromCenterY"]*100))
-        
-        cv2.setTrackbarPos('Dilation','cannySliders', canny["dilation"])
-        cv2.setTrackbarPos('SigmaColor','cannySliders', canny["sigmaColor"])
-        cv2.setTrackbarPos('SigmaSpace','cannySliders', canny["sigmaSpace"])
-        cv2.setTrackbarPos('d','cannySliders', canny["pixel_neighborhood_diameter"])
-    except Exception as e:
-        print(e)
-        print("lol")
+    cv2.setTrackbarPos('minCanny','cannySliders', canny["minCannyThresh"])
+    cv2.setTrackbarPos('maxCanny','cannySliders', canny["maxCannyThresh"])
+    cv2.setTrackbarPos('Gaussianblur','cannySliders', canny["gaussianBlurKernelSize"])
+    cv2.setTrackbarPos('minsize','cannySliders', int(canny["minSizeRatio"]*100))
+    cv2.setTrackbarPos('maxsize','cannySliders', int(canny["maxSizeRatio"]*100))
+    cv2.setTrackbarPos('ErrorX','cannySliders', int(canny["errorFromCenterX"]*100))
+    cv2.setTrackbarPos('ErrorY','cannySliders', int(canny["errorFromCenterY"]*100))
+    
+    cv2.setTrackbarPos('Dilation','cannySliders', canny["dilation"])
+    cv2.setTrackbarPos('SigmaColor','cannySliders', canny["sigmaColor"])
+    cv2.setTrackbarPos('SigmaSpace','cannySliders', canny["sigmaSpace"])
+    cv2.setTrackbarPos('d','cannySliders', canny["pixel_neighborhood_diameter"])
 
 
 # Vision: Functions
@@ -855,11 +881,11 @@ def lineFollower():
     global period_start
     prepareLineFollower()
 
-    last_printed = None # debugging: printing values
     position = readSensors() # (use percentages) since pids have a sampling period, maybe read the sensors continously until period is over? and average all to have an accurate and reliable reading (use percentages)
 
     current_time = time.time()
     if current_time - period_start >= period:
+        print("good", time.time())
         lSpd, rSpd = computePID(position)
         period_start = current_time
         
@@ -919,7 +945,8 @@ def checkArmUpdatedManually():
                 viewed_armPosition = armPosition
                 updateArmSliders()
                 updateArmButtons()
-
+        
+        
             changed = go_to_coordinates(mode, viewed_armPosition, MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                                 MSFromPercent(armPositions[armShapes[viewed_armShapePosition]][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
@@ -933,27 +960,38 @@ def checkArmUpdatedManually():
 
             # move to next arm position
             armPosition += 1
+            print("armPosition", armPosition)
             armPosition = wrap2(armPosition)
+            print("armPosition", armPosition)
 
 def robotArm(Max):
     global armPosition, last_go_arm_execusion
     global saved
+
 
     checkArmUpdatedManually()
 
     # this is for auto mode, execute the sequence once and then stop
     #else:
     if time.time() - last_go_arm_execusion >= delay_between_arm_execusions:
+        
+        # we just dropped the shape, now let's wait for it to dispurse by itself before moving again ok?
+        if armPosition == 7: # we don't go to the position right after it just yet
+            time.sleep(0.5)
+            
         changed = go_to_coordinates(mode, armPosition, MSFromPercent(armPositions[detectedShape][armPosition]["mouth"], MOUTH_MIN, MOUTH_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["bottom"], BOTTOM_MIN, BOTTOM_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["tilt"], TILT_MIN, TILT_MAX), \
                             MSFromPercent(armPositions[detectedShape][armPosition]["spine"], SPINE_MIN, SPINE_MAX),
                             shape=detectedShape)
-        #if changed:
-        #    saved = False
+
         armPosition += 1
         last_go_arm_execusion = time.time()
-        return armPosition < Max
+        print("i'm avoiding dispûrtion if i didn't pick up more than one cube")
+        if squares > 1:
+            return armPosition < Max
+        else:
+            return armPosition < min(7, Max)
     return True
 
 # edge detection
@@ -978,8 +1016,8 @@ def edgeCannyStuff():
         heightRatio = h/ogframe.shape[0]
 
         # if it's large enough
-        if widthRatio >= canny["minSizeRatio"] and heightRatio >= canny["minSizeRatio"] and \
-            widthRatio <= canny["maxSizeRatio"] and heightRatio <= canny["maxSizeRatio"]:
+        if widthRatio >= canny["minSizeRatio"] and heightRatio >= canny["minSizeRatioY"] and \
+            widthRatio <= canny["maxSizeRatio"] and heightRatio <= canny["maxSizeRatioY"]:
             
 
 
@@ -1042,7 +1080,7 @@ motors_resetted = False
 x_center_of_img, y_center_of_img = [None, None]
 # Auto: Functions
 def autoThread():
-    global current_shapes_count # automatic switch from vision to line follower
+    global current_shapes_count, triangles, squares # automatic switch from vision to line follower
     global motors_resetted # Unselected mode
     global x_center_of_img, y_center_of_img
     global ogframe, cap, edges, dilated
@@ -1070,7 +1108,6 @@ def autoThread():
                     saveVars()
 
             if mode == "Vision":
-                resetLineFollower()
                 carControlOn = False
                 edge_detecting_shape()
                 if time.time() - votes["Start Of Vote"] > votes["Max Vote Period"]:
@@ -1081,12 +1118,6 @@ def autoThread():
                     evaluate_detection = True
                     if detectedShape == "Unknown":
                         evaluate_detection = False
- 
-                    # count shapes
-                    count_the_shapes = True
-                    if count_the_shapes:
-                        print("I WILL SWITCH TO LINE FOLLOWER AUTOMATICALLY SOON OR NOW, SHAPES: " + str(current_shapes_count) + "/" + str(total_shapes_to_pickup))
-                        current_shapes_count += 1
 
                     if detectedShape == "Circles" or detectedShape == "Rectangles":
                         evaluate_detection = False
@@ -1096,13 +1127,19 @@ def autoThread():
                     if evaluate_detection:
                         pickupRequest = True
 
-                        if current_shapes_count >= total_shapes_to_pickup:
-                            current_shapes_count = 0
-                            mode = "Line Follower"
-                            print("AUTO: Line Follower mode (pickup request sent)")
-                        else:
-                            mode = "Arm"
-                            print("AUTO: Arm mode (pickup request sent)")
+                        # count shapes
+                        count_the_shapes = True
+                        if count_the_shapes:
+                            print("I WILL SWITCH TO LINE FOLLOWER AUTOMATICALLY SOON OR NOW, SHAPES: " + str(current_shapes_count) + "/" + str(total_shapes_to_pickup))
+                            current_shapes_count += 1
+                            if detectedShape == "Squares":
+                                squares += 1
+                            elif detectedShape == "Triangles":
+                                triangles += 1
+
+                        print("if go_arm is true, then arm will not move check pls, rn it's", go_arm)
+                        mode = "Arm"
+                        print("AUTO: Arm mode (pickup request sent)")
 
                 if not comp_day:
                     # DEBUGGING:
@@ -1123,12 +1160,11 @@ def autoThread():
                         print(e)
 
             elif mode == "Arm":
-                resetLineFollower()
                 checkArmUpdatedManually()
                 carControlOn = False
 
                 allowToPickUp = True
-                if allowToPickUp:
+                if allowToPickUp and not go_arm:
                     allowToPickUp = False
 
                     # pickup loop
@@ -1139,7 +1175,6 @@ def autoThread():
                             if cv2.waitKey(1) == ord('q'):
                                 break
                             pass
-
                         # then re-execute the first position of the arm so it can return to point of start
                         armPosition = 0
                         last_go_arm_execusion = 0
@@ -1152,12 +1187,18 @@ def autoThread():
                         turnOffArm() # DEBUG: then turn arm off
                         print("Finished pickup")
 
-                        mode = "Vision"
-                        print("AUTO: Vision mode")
-                        votes = resetVotes()
+                        
                         # after pickup, either send us back to vision or move on to next step
-                    else:
-                        checkArmUpdatedManually()
+                        if current_shapes_count >= total_shapes_to_pickup:
+                            current_shapes_count = 0
+                            squares = 0
+                            triangles = 0
+                            mode = "Line Follower"
+                            print("AUTO: Line Follower mode (pickup request sent)")
+                        else:
+                            mode = "Vision"
+                            print("AUTO: Vision mode")
+                            votes = resetVotes()
 
                 if not comp_day:
                     if cv2.waitKey(1) == ord('q'):
@@ -1176,7 +1217,6 @@ def autoThread():
                 
 
             elif mode == "Cargo Pass":
-                resetLineFollower()
                 carControlOn = False
 
                 if receivedAnglesBoolean:
@@ -1187,12 +1227,10 @@ def autoThread():
                                         MSFromPercent(current_manual_cargo_positions["spine"], SPINE_MIN, SPINE_MAX))
 
             elif mode == "NRF":
-                resetLineFollower()
                 carControlOn = False
                 sendNRFFinishMsg(pi)
 
             elif mode == "Unselected":
-                resetLineFollower()
                 carControlOn = False
 
                 if not motors_resetted:
@@ -1226,6 +1264,7 @@ def autoThread():
                 motors_resetted = False
 
             if mode != "Line Follower":
+                resetLineFollower()
                 lining = False
 
         except Exception as e:
