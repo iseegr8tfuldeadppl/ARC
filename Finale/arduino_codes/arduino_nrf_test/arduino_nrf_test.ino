@@ -5,7 +5,7 @@
  
 #define NRF24_DYNAMIC_PAYLOAD 1
 byte rf24_tx[6] = "readp"; // sending
-byte rf24_rx[6] = "writp"; // receiving
+byte rf24_rx[6] = "00001"; // receiving
 
 byte payload[32];
 char chars[32];
